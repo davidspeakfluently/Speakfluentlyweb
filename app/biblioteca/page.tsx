@@ -55,8 +55,8 @@ export default async function BibliotecaPage({
         </div>
       </AppHeader>
 
-      <div className="mx-auto grid max-w-[1400px] grid-cols-[240px_1fr] gap-10 p-10">
-        <div className="flex flex-col gap-7">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[240px_1fr] lg:gap-10 lg:p-10">
+        <div className="flex flex-col gap-5 lg:gap-7">
           <FilterGroup
             label="Nivel"
             options={["Todos", ...NIVELES]}
@@ -81,8 +81,10 @@ export default async function BibliotecaPage({
         </div>
 
         <div>
-          <div className="mb-5 flex items-baseline justify-between">
-            <div className="text-[22px] font-bold">Tu próximo paso en inglés está aquí</div>
+          <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-0">
+            <div className="text-[20px] font-bold sm:text-[22px]">
+              Tu próximo paso en inglés está aquí
+            </div>
             <div className="font-mono text-[13px] text-accent">
               {resources.length} recursos
             </div>

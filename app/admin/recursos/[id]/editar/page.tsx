@@ -28,13 +28,13 @@ export default async function EditarRecursoPage({
       <AppHeader>
         <Link
           href="/admin/recursos"
-          className="ml-auto rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent"
+          className="self-start rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent sm:ml-auto sm:self-auto"
         >
           ← Recursos
         </Link>
       </AppHeader>
 
-      <div className="mx-auto max-w-[560px] p-10">
+      <div className="mx-auto max-w-[560px] p-4 sm:p-6 lg:p-10">
         <div className="mb-6 text-[22px] font-bold">Editar recurso</div>
 
         <form action={boundUpdate} className="flex flex-col gap-[18px]">

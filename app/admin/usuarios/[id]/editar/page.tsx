@@ -26,13 +26,13 @@ export default async function EditarEstudiantePage({
       <AppHeader>
         <Link
           href="/admin/usuarios"
-          className="ml-auto rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent"
+          className="self-start rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent sm:ml-auto sm:self-auto"
         >
           ← Estudiantes
         </Link>
       </AppHeader>
 
-      <div className="mx-auto max-w-[480px] p-10">
+      <div className="mx-auto max-w-[480px] p-4 sm:p-6 lg:p-10">
         <div className="mb-1.5 text-[22px] font-bold">{student.display_name}</div>
         <div className="mb-6 text-sm text-accent">{student.email}</div>
 

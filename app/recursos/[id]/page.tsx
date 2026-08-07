@@ -35,15 +35,15 @@ export default async function ResourceDetailPage({
       <AppHeader>
         <Link
           href="/biblioteca"
-          className="ml-auto rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent"
+          className="self-start rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent sm:ml-auto sm:self-auto"
         >
           ← Volver a la biblioteca
         </Link>
       </AppHeader>
 
-      <div className="mx-auto grid max-w-[1400px] grid-cols-[1fr_300px] gap-10 p-10">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 p-4 sm:p-6 lg:grid-cols-[1fr_300px] lg:gap-10 lg:p-10">
         <div>
-          <div className="mb-4 flex gap-2">
+          <div className="mb-4 flex flex-wrap gap-2">
             <span className="rounded-[3px] bg-accent px-2 py-1 font-mono text-[11px] tracking-[0.06em] text-white">
               {TIPO_LABELS[resource.tipo]}
             </span>
@@ -55,7 +55,9 @@ export default async function ResourceDetailPage({
             </span>
           </div>
 
-          <div className="text-[30px] font-extrabold leading-[1.2]">{resource.titulo}</div>
+          <div className="text-[24px] font-extrabold leading-[1.2] sm:text-[30px]">
+            {resource.titulo}
+          </div>
           <div className="mt-2.5 max-w-[640px] text-[15px] leading-[1.5] text-accent">
             {resource.descripcion}
           </div>
@@ -84,7 +86,7 @@ export default async function ResourceDetailPage({
               </div>
             )}
 
-            <div className="flex gap-3 p-5">
+            <div className="flex flex-wrap gap-3 p-4 sm:p-5">
               {fileUrl ? (
                 <a
                   href={fileUrl}

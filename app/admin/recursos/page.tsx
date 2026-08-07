@@ -18,13 +18,13 @@ export default async function AdminRecursosPage() {
       <AppHeader>
         <Link
           href="/admin"
-          className="ml-auto rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent"
+          className="self-start rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent sm:ml-auto sm:self-auto"
         >
           ← Admin
         </Link>
       </AppHeader>
 
-      <div className="mx-auto max-w-[1400px] p-10">
+      <div className="mx-auto max-w-[1400px] p-4 sm:p-6 lg:p-10">
         <div className="mb-6 flex items-center justify-between">
           <div className="text-[22px] font-bold">Recursos</div>
           <Link
@@ -35,8 +35,8 @@ export default async function AdminRecursosPage() {
           </Link>
         </div>
 
-        <div className="overflow-hidden rounded border border-border bg-white">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto rounded border border-border bg-white">
+          <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-bg/60">
                 <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">

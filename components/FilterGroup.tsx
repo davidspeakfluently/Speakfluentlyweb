@@ -18,7 +18,7 @@ export function FilterGroup({
       <div className="mb-2.5 font-mono text-xs uppercase tracking-[0.06em] text-accent">
         {label}
       </div>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
         {options.map((option) => {
           const active = current === option;
           const params = new URLSearchParams(
@@ -36,7 +36,7 @@ export function FilterGroup({
               key={option}
               href={qs ? `/biblioteca?${qs}` : "/biblioteca"}
               className={
-                "rounded px-3 py-[9px] text-left text-sm " +
+                "shrink-0 whitespace-nowrap rounded px-3 py-[9px] text-left text-sm lg:shrink lg:whitespace-normal " +
                 (active
                   ? "border border-accent bg-accent font-bold text-white"
                   : "border border-border bg-white font-medium text-navy")

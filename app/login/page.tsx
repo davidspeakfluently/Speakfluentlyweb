@@ -11,7 +11,7 @@ export default async function LoginPage({
     <div className="grid min-h-screen grid-cols-1">
       <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
         {/* Panel de marca */}
-        <div className="relative flex flex-col justify-between overflow-hidden bg-navy p-16">
+        <div className="relative flex flex-col justify-between gap-10 overflow-hidden bg-navy p-6 py-10 sm:p-10 md:gap-0 md:p-16">
           <div className="absolute -right-[60px] -top-[60px] h-[280px] w-[280px] rounded-full bg-accent opacity-60" />
           <div className="absolute -bottom-[100px] -left-10 h-[220px] w-[220px] rounded-full border-2 border-slate opacity-40" />
 
@@ -23,10 +23,10 @@ export default async function LoginPage({
           </div>
 
           <div className="relative z-10 max-w-[420px]">
-            <div className="text-[40px] font-bold leading-[1.15] text-white">
+            <div className="text-[28px] font-bold leading-[1.15] text-white sm:text-[34px] md:text-[40px]">
               Todo tu material de práctica, en un solo lugar.
             </div>
-            <div className="mt-4 text-[17px] leading-[1.5] text-border">
+            <div className="mt-4 text-[15px] leading-[1.5] text-border sm:text-[17px]">
               Cartillas, guías, vocabulario y ejercicios de tus profesores, organizados por
               nivel para que avances a tu ritmo.
             </div>
@@ -36,7 +36,7 @@ export default async function LoginPage({
         </div>
 
         {/* Formulario */}
-        <div className="flex items-center justify-center bg-bg p-16">
+        <div className="flex items-center justify-center bg-bg p-6 py-10 sm:p-10 md:p-16">
           <div className="w-full max-w-[380px]">
             <div className="mb-1.5 text-[26px] font-bold">Bienvenido de nuevo</div>
             <div className="mb-9 text-[15px] text-accent">
