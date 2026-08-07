@@ -1,87 +1,125 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminSupabase } from "@/lib/supabase/admin";
-import { deleteResourceFile, uploadResourceFile } from "@/lib/storage";
+import { createUploadTarget, deleteResourceFile } from "@/lib/storage";
 import type { Nivel, Tipo } from "@/lib/types";
 
-function readFields(formData: FormData) {
-  return {
-    titulo: String(formData.get("titulo") ?? "").trim(),
-    descripcion: String(formData.get("descripcion") ?? "").trim(),
-    tipo: String(formData.get("tipo") ?? "") as Tipo,
-    tema: String(formData.get("tema") ?? "").trim(),
-    nivel: String(formData.get("nivel") ?? "") as Nivel,
-    autor: String(formData.get("autor") ?? "").trim(),
-    meta: String(formData.get("meta") ?? "").trim(),
-  };
+export interface ResourceFieldsInput {
+  titulo: string;
+  descripcion: string;
+  tipo: Tipo;
+  tema: string;
+  nivel: Nivel;
+  autor: string;
+  meta: string;
 }
 
-export async function createResource(formData: FormData) {
-  const { user } = await requireAdmin();
-  const fields = readFields(formData);
+export type ActionResult<T = Record<string, never>> = { error: string } | T;
 
-  if (!fields.titulo || !fields.descripcion || !fields.tipo || !fields.tema || !fields.nivel) {
-    redirect("/admin/recursos/nuevo?error=1");
-  }
+function validate(fields: ResourceFieldsInput) {
+  return Boolean(
+    fields.titulo && fields.descripcion && fields.tipo && fields.tema && fields.nivel,
+  );
+}
+
+/** Crea el recurso (solo metadatos, sin archivo) y devuelve su id. */
+export async function createResourceRecord(
+  fields: ResourceFieldsInput,
+): Promise<ActionResult<{ id: string }>> {
+  const { user } = await requireAdmin();
+  if (!validate(fields)) return { error: "Faltan campos obligatorios." };
 
   const admin = createAdminSupabase();
-  const { data: resource, error } = await admin
+  const { data, error } = await admin
     .from("resources")
     .insert({ ...fields, created_by: user.id })
-    .select()
+    .select("id")
     .single();
 
-  if (error || !resource) {
-    redirect("/admin/recursos/nuevo?error=1");
-  }
-
-  const file = formData.get("file");
-  if (file instanceof File && file.size > 0) {
-    const path = `${resource.id}/${crypto.randomUUID()}-${file.name}`;
-    await uploadResourceFile(path, file);
-    await admin.from("resources").update({ storage_path: path }).eq("id", resource.id);
-  }
+  if (error || !data) return { error: error?.message ?? "No se pudo crear el recurso." };
 
   revalidatePath("/admin/recursos");
   revalidatePath("/biblioteca");
-  redirect("/admin/recursos");
+  return { id: data.id };
 }
 
-export async function updateResource(id: string, formData: FormData) {
+export async function updateResourceRecord(
+  id: string,
+  fields: ResourceFieldsInput,
+): Promise<ActionResult> {
   await requireAdmin();
-  const fields = readFields(formData);
-
-  if (!fields.titulo || !fields.descripcion || !fields.tipo || !fields.tema || !fields.nivel) {
-    redirect(`/admin/recursos/${id}/editar?error=1`);
-  }
+  if (!validate(fields)) return { error: "Faltan campos obligatorios." };
 
   const admin = createAdminSupabase();
-  const { data: current } = await admin
-    .from("resources")
-    .select("storage_path")
-    .eq("id", id)
-    .single();
-
-  await admin.from("resources").update(fields).eq("id", id);
-
-  const file = formData.get("file");
-  if (file instanceof File && file.size > 0) {
-    if (current?.storage_path) await deleteResourceFile(current.storage_path);
-    const path = `${id}/${crypto.randomUUID()}-${file.name}`;
-    await uploadResourceFile(path, file);
-    await admin.from("resources").update({ storage_path: path }).eq("id", id);
-  } else if (formData.get("remove_file") === "on" && current?.storage_path) {
-    await deleteResourceFile(current.storage_path);
-    await admin.from("resources").update({ storage_path: null }).eq("id", id);
-  }
+  const { error } = await admin.from("resources").update(fields).eq("id", id);
+  if (error) return { error: error.message };
 
   revalidatePath("/admin/recursos");
   revalidatePath("/biblioteca");
   revalidatePath(`/recursos/${id}`);
-  redirect("/admin/recursos");
+  return {};
+}
+
+/**
+ * Genera una URL firmada de subida: el archivo va del navegador directo a
+ * Supabase Storage, sin pasar por la función serverless (que en Vercel
+ * limita el body a unos pocos MB — insuficiente para audio/video reales).
+ */
+export async function getResourceUploadTarget(
+  resourceId: string,
+  fileName: string,
+): Promise<ActionResult<{ path: string; token: string }>> {
+  await requireAdmin();
+  const path = `${resourceId}/${crypto.randomUUID()}-${fileName}`;
+  const target = await createUploadTarget(path);
+  if (!target) return { error: "No se pudo preparar la subida." };
+  return target;
+}
+
+/** Tras subir el archivo directo a Storage, guarda la ruta final en el recurso. */
+export async function finalizeResourceFile(
+  resourceId: string,
+  path: string,
+  previousPath?: string | null,
+): Promise<ActionResult> {
+  await requireAdmin();
+  if (previousPath) await deleteResourceFile(previousPath);
+
+  const admin = createAdminSupabase();
+  const { error } = await admin
+    .from("resources")
+    .update({ storage_path: path })
+    .eq("id", resourceId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/recursos");
+  revalidatePath("/biblioteca");
+  revalidatePath(`/recursos/${resourceId}`);
+  return {};
+}
+
+export async function removeResourceFile(
+  resourceId: string,
+  currentPath: string,
+): Promise<ActionResult> {
+  await requireAdmin();
+  await deleteResourceFile(currentPath);
+
+  const admin = createAdminSupabase();
+  const { error } = await admin
+    .from("resources")
+    .update({ storage_path: null })
+    .eq("id", resourceId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/recursos");
+  revalidatePath("/biblioteca");
+  revalidatePath(`/recursos/${resourceId}`);
+  return {};
 }
 
 export async function deleteResource(id: string) {

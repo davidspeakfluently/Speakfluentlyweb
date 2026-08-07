@@ -10,13 +10,15 @@ export async function getSignedFileUrl(path: string, expiresIn = 3600) {
   return data.signedUrl;
 }
 
-export async function uploadResourceFile(path: string, file: File) {
+/**
+ * URL + token de un solo uso para que el navegador suba el archivo
+ * directamente a Storage (bypass del límite de body de Server Actions).
+ */
+export async function createUploadTarget(path: string) {
   const supabase = createAdminSupabase();
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-    upsert: true,
-    contentType: file.type || undefined,
-  });
-  if (error) throw error;
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(path);
+  if (error) return null;
+  return { path: data.path, token: data.token };
 }
 
 export async function deleteResourceFile(path: string) {
