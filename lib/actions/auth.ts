@@ -1,11 +1,10 @@
+"use server";
+
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-export default async function Home() {
+export async function signOut() {
   const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  redirect(user ? "/biblioteca" : "/login");
+  await supabase.auth.signOut();
+  redirect("/login");
 }

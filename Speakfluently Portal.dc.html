@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    * { box-sizing: border-box; font-family: 'Manrope', sans-serif; }
+    input::placeholder { color: #6687bb; opacity: 0.7; }
+    ::selection { background: #b2c4d8; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:#e1e1ef;color:#00043c">
+
+  <sc-if value="{{isLogin}}" hint-placeholder-val="{{true}}">
+    <div style="min-height:100vh;display:grid;grid-template-columns:1fr;">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-height:100vh">
+        <div style="background:#00043c;padding:64px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-60px;right:-60px;width:280px;height:280px;border-radius:50%;background:#152364;opacity:0.6"></div>
+          <div style="position:absolute;bottom:-100px;left:-40px;width:220px;height:220px;border-radius:50%;border:2px solid #6687bb;opacity:0.4"></div>
+          <div style="position:relative;z-index:1">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.12em;color:#b2c4d8;text-transform:uppercase">Speakfluently</div>
+            <div style="font-size:15px;color:#e1e1ef;margin-top:2px">Academia de inglés online</div>
+          </div>
+          <div style="position:relative;z-index:1;max-width:420px">
+            <div style="font-size:40px;line-height:1.15;font-weight:700;color:#ffffff">Todo tu material de práctica, en un solo lugar.</div>
+            <div style="font-size:17px;color:#b2c4d8;margin-top:16px;line-height:1.5">Cartillas, guías, vocabulario y ejercicios de tus profesores, organizados por nivel para que avances a tu ritmo.</div>
+          </div>
+          <div style="position:relative;z-index:1;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6687bb">Portal de estudiantes</div>
+        </div>
+
+        <div style="background:#e1e1ef;display:flex;align-items:center;justify-content:center;padding:64px">
+          <div style="width:100%;max-width:380px">
+            <div style="font-size:26px;font-weight:700;margin-bottom:6px">Bienvenido de nuevo</div>
+            <div style="font-size:15px;color:#152364;margin-bottom:36px">Ingresa con los datos que te dio tu profesor.</div>
+
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.04em;color:#152364;text-transform:uppercase">Usuario</label>
+                <input type="text" value="{{loginUsername}}" onChange="{{onUsernameChange}}" placeholder="tu.nombre@correo.com" style="padding:13px 14px;border:1px solid #b2c4d8;border-radius:4px;font-size:15px;background:#ffffff;color:#00043c;outline:none">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.04em;color:#152364;text-transform:uppercase">Contraseña</label>
+                <input type="password" value="{{password}}" onChange="{{onPasswordChange}}" placeholder="••••••••" style="padding:13px 14px;border:1px solid #b2c4d8;border-radius:4px;font-size:15px;background:#ffffff;color:#00043c;outline:none">
+              </div>
+
+              <button onClick="{{doLogin}}" style="margin-top:8px;padding:14px;border:none;border-radius:4px;background:#152364;color:#ffffff;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#00043c">Entrar a mis recursos</button>
+
+              <div style="text-align:center;margin-top:4px">
+                <a href="#" onClick="{{doLogin}}" style="font-size:13px;color:#6687bb;text-decoration:none">¿Olvidaste tu contraseña? Contacta a tu profesor</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isLibrary}}" hint-placeholder-val="{{false}}">
+    <div>
+      <div style="position:sticky;top:0;z-index:10;background:#00043c;padding:18px 40px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:10px;height:10px;border-radius:50%;background:#6687bb"></div>
+          <div style="font-size:15px;font-weight:700;color:#ffffff;letter-spacing:0.01em">Speakfluently <span style="color:#6687bb;font-weight:500">/ Recursos</span></div>
+        </div>
+        <input type="text" value="{{search}}" onChange="{{onSearchChange}}" placeholder="Buscar por título…" style="flex:1;max-width:420px;padding:11px 16px;border-radius:4px;border:1px solid #152364;background:#060e4b;color:#ffffff;font-size:14px;outline:none">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#b2c4d8">{{displayName}}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:240px 1fr;gap:40px;padding:40px;max-width:1400px;margin:0 auto">
+        <div style="display:flex;flex-direction:column;gap:28px">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:#152364;text-transform:uppercase;margin-bottom:10px">Nivel</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{nivelOptions}}" as="op" hint-placeholder-count="4">
+                <button onClick="{{op.onClick}}" style="text-align:left;padding:9px 12px;border-radius:4px;border:1px solid {{op.borderColor}};background:{{op.bg}};color:{{op.color}};font-size:14px;cursor:pointer;font-weight:{{op.weight}}">{{op.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:#152364;text-transform:uppercase;margin-bottom:10px">Tema</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{temaOptions}}" as="op" hint-placeholder-count="5">
+                <button onClick="{{op.onClick}}" style="text-align:left;padding:9px 12px;border-radius:4px;border:1px solid {{op.borderColor}};background:{{op.bg}};color:{{op.color}};font-size:14px;cursor:pointer;font-weight:{{op.weight}}">{{op.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:#152364;text-transform:uppercase;margin-bottom:10px">Tipo de recurso</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{tipoOptions}}" as="op" hint-placeholder-count="6">
+                <button onClick="{{op.onClick}}" style="text-align:left;padding:9px 12px;border-radius:4px;border:1px solid {{op.borderColor}};background:{{op.bg}};color:{{op.color}};font-size:14px;cursor:pointer;font-weight:{{op.weight}}">{{op.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px">
+            <div style="font-size:22px;font-weight:700">Tu próximo paso en inglés está aquí</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#152364">{{resultCount}} recursos</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px">
+            <sc-for list="{{filteredResources}}" as="r" hint-placeholder-count="9">
+              <div onClick="{{r.onOpen}}" style="background:#ffffff;border:1px solid #b2c4d8;border-radius:4px;padding:20px;cursor:pointer;display:flex;flex-direction:column;gap:12px;transition:transform 0.15s,box-shadow 0.15s" style-hover="transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,4,60,0.12)">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;color:#ffffff;background:#152364;padding:4px 8px;border-radius:3px">{{r.tipoLabel}}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6687bb">{{r.nivel}}</span>
+                </div>
+                <div style="font-size:16px;font-weight:700;line-height:1.35">{{r.titulo}}</div>
+                <div style="font-size:13px;color:#152364;line-height:1.4">{{r.descripcion}}</div>
+                <div style="font-size:12px;color:#6687bb;margin-top:auto">{{r.tema}} · {{r.meta}}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{noResults}}" hint-placeholder-val="{{false}}">
+            <div style="padding:60px 0;text-align:center;color:#6687bb;font-size:15px">No encontramos recursos con esos filtros. Prueba con otra combinación.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isDetail}}" hint-placeholder-val="{{false}}">
+    <div>
+      <div style="position:sticky;top:0;z-index:10;background:#00043c;padding:18px 40px;display:flex;align-items:center;gap:24px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:10px;height:10px;border-radius:50%;background:#6687bb"></div>
+          <div style="font-size:15px;font-weight:700;color:#ffffff">Speakfluently <span style="color:#6687bb;font-weight:500">/ Recursos</span></div>
+        </div>
+        <button onClick="{{goLibrary}}" style="margin-left:auto;padding:9px 16px;border-radius:4px;border:1px solid #152364;background:#060e4b;color:#e1e1ef;font-size:13px;cursor:pointer">← Volver a la biblioteca</button>
+      </div>
+
+      <sc-if value="{{selectedResource}}" hint-placeholder-val="{{false}}">
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:40px;padding:40px;max-width:1400px;margin:0 auto">
+          <div>
+            <div style="display:flex;gap:8px;margin-bottom:16px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;color:#ffffff;background:#152364;padding:4px 8px;border-radius:3px">{{selectedResource.tipoLabel}}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#152364;border:1px solid #b2c4d8;padding:4px 8px;border-radius:3px">{{selectedResource.nivel}}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#152364;border:1px solid #b2c4d8;padding:4px 8px;border-radius:3px">{{selectedResource.tema}}</span>
+            </div>
+            <div style="font-size:30px;font-weight:800;line-height:1.2">{{selectedResource.titulo}}</div>
+            <div style="font-size:15px;color:#152364;margin-top:10px;line-height:1.5;max-width:640px">{{selectedResource.descripcion}}</div>
+            <div style="font-size:13px;color:#6687bb;margin-top:8px">Por {{selectedResource.autor}} · {{selectedResource.meta}}</div>
+
+            <div style="margin-top:32px;background:#ffffff;border:1px solid #b2c4d8;border-radius:6px;overflow:hidden">
+              <div style="{{selectedResource.previewStyle}}">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#152364;background:#ffffff;padding:6px 12px;border-radius:4px">{{selectedResource.previewLabel}}</div>
+              </div>
+              <div style="padding:20px;display:flex;gap:12px">
+                <button style="padding:12px 20px;border:none;border-radius:4px;background:#152364;color:#ffffff;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#00043c">{{selectedResource.actionLabel}}</button>
+                <button style="padding:12px 20px;border:1px solid #b2c4d8;border-radius:4px;background:#ffffff;color:#00043c;font-size:14px;cursor:pointer">Marcar como completado</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:#152364;text-transform:uppercase;margin-bottom:14px">También te puede servir</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{relatedResources}}" as="r" hint-placeholder-count="3">
+                <div onClick="{{r.onOpen}}" style="background:#ffffff;border:1px solid #b2c4d8;border-radius:4px;padding:14px;cursor:pointer" style-hover="border-color:#6687bb">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#6687bb;margin-bottom:6px">{{r.tipoLabel}} · {{r.nivel}}</div>
+                  <div style="font-size:14px;font-weight:700;line-height:1.3">{{r.titulo}}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;vistaInicial&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;login&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;biblioteca&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Comportamiento&quot;},&quot;mostrarNotasVoz&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Comportamiento&quot;}}">
+const RESOURCES = [
+  { id: 1, titulo: 'Present Perfect vs. Simple Past', tipo: 'guia', tema: 'Gramática', nivel: 'Básico', autor: 'Prof. Marta Díaz', meta: '6 páginas', descripcion: 'Cuándo usar cada tiempo verbal, con ejemplos de la vida diaria.' },
+  { id: 2, titulo: '50 verbos frasales para el día a día', tipo: 'vocab', tema: 'Vocabulario', nivel: 'Intermedio', autor: 'Prof. Marta Díaz', meta: '4 páginas', descripcion: 'Phrasal verbs esenciales agrupados por situación: casa, trabajo, calle.' },
+  { id: 3, titulo: 'Pronunciación: los sonidos TH y R', tipo: 'audio', tema: 'Pronunciación', nivel: 'Básico', autor: 'Prof. Iván Rojas', meta: '8 min de audio', descripcion: 'Nota de voz con ejercicios de repetición para los sonidos más difíciles del español a inglés.' },
+  { id: 4, titulo: 'Roleplay: entrevista de trabajo en inglés', tipo: 'video', tema: 'Conversación', nivel: 'Avanzado', autor: 'Prof. Iván Rojas', meta: '12 min de video', descripcion: 'Simulación completa de una entrevista, con frases clave para destacar tu experiencia.' },
+  { id: 5, titulo: 'Vocabulario de viajes: aeropuerto y hotel', tipo: 'vocab', tema: 'Viajes', nivel: 'Básico', autor: 'Prof. Marta Díaz', meta: '3 páginas', descripcion: 'Palabras y frases listas para usar antes de tu próximo viaje.' },
+  { id: 6, titulo: 'Cómo escribir emails formales en inglés', tipo: 'guia', tema: 'Business English', nivel: 'Intermedio', autor: 'Prof. Camila Vega', meta: '5 páginas', descripcion: 'Estructura, saludos y cierres apropiados para contextos laborales.' },
+  { id: 7, titulo: 'Condicionales: tipo 1 y tipo 2', tipo: 'cartilla', tema: 'Gramática', nivel: 'Intermedio', autor: 'Prof. Camila Vega', meta: '7 páginas', descripcion: 'Explicación paso a paso con ejercicios resueltos.' },
+  { id: 8, titulo: 'Ejercicios: artículos A, AN, THE', tipo: 'ejercicio', tema: 'Gramática', nivel: 'Básico', autor: 'Prof. Marta Díaz', meta: '20 ejercicios', descripcion: 'Práctica guiada con soluciones al final del documento.' },
+  { id: 9, titulo: 'Small talk: cómo iniciar una conversación', tipo: 'video', tema: 'Conversación', nivel: 'Básico', autor: 'Prof. Iván Rojas', meta: '9 min de video', descripcion: 'Frases naturales para romper el hielo en inglés, sin sonar forzado.' },
+  { id: 10, titulo: 'Vocabulario de negocios: reuniones', tipo: 'vocab', tema: 'Business English', nivel: 'Avanzado', autor: 'Prof. Camila Vega', meta: '4 páginas', descripcion: 'Términos clave para liderar y participar en reuniones en inglés.' },
+  { id: 11, titulo: 'Nota de voz: entonación en preguntas', tipo: 'audio', tema: 'Pronunciación', nivel: 'Intermedio', autor: 'Prof. Iván Rojas', meta: '6 min de audio', descripcion: 'Cómo subir y bajar el tono para sonar más natural al preguntar.' },
+  { id: 12, titulo: 'Modal verbs: can, could, should, must', tipo: 'guia', tema: 'Gramática', nivel: 'Intermedio', autor: 'Prof. Marta Díaz', meta: '6 páginas', descripcion: 'Diferencias de uso con ejemplos contrastados.' },
+  { id: 13, titulo: 'Ejercicios: preposiciones de tiempo y lugar', tipo: 'ejercicio', tema: 'Gramática', nivel: 'Básico', autor: 'Prof. Camila Vega', meta: '18 ejercicios', descripcion: 'IN, ON, AT y más, con casos de uso comunes.' },
+  { id: 14, titulo: 'Vocabulario de comida y restaurantes', tipo: 'vocab', tema: 'Viajes', nivel: 'Básico', autor: 'Prof. Marta Díaz', meta: '3 páginas', descripcion: 'Para pedir, describir sabores y entender un menú en inglés.' },
+  { id: 15, titulo: 'Debate: pros y contras del trabajo remoto', tipo: 'video', tema: 'Conversación', nivel: 'Avanzado', autor: 'Prof. Iván Rojas', meta: '15 min de video', descripcion: 'Práctica de argumentación y vocabulario de opinión.' },
+  { id: 16, titulo: 'Presentaciones efectivas en inglés', tipo: 'guia', tema: 'Business English', nivel: 'Intermedio', autor: 'Prof. Camila Vega', meta: '8 páginas', descripcion: 'Estructura y frases de transición para presentar con seguridad.' },
+  { id: 17, titulo: 'Nota de voz: ritmo y conexión de palabras', tipo: 'audio', tema: 'Pronunciación', nivel: 'Avanzado', autor: 'Prof. Iván Rojas', meta: '7 min de audio', descripcion: 'Cómo enlazar palabras para sonar más fluido.' },
+  { id: 18, titulo: 'Vocabulario esencial de la oficina', tipo: 'vocab', tema: 'Business English', nivel: 'Básico', autor: 'Prof. Marta Díaz', meta: '3 páginas', descripcion: 'Palabras que usarás todos los días en un entorno laboral.' },
+  { id: 19, titulo: 'Ejercicios: Present Continuous', tipo: 'ejercicio', tema: 'Gramática', nivel: 'Básico', autor: 'Prof. Camila Vega', meta: '16 ejercicios', descripcion: 'Práctica de formación y uso del tiempo presente continuo.' },
+  { id: 20, titulo: 'Cartilla: pasado simple, verbos irregulares', tipo: 'cartilla', tema: 'Gramática', nivel: 'Básico', autor: 'Prof. Marta Díaz', meta: '10 páginas', descripcion: 'Lista de verbos irregulares más usados, con ejemplos.' },
+  { id: 21, titulo: 'Cómo dar y pedir direcciones', tipo: 'video', tema: 'Viajes', nivel: 'Intermedio', autor: 'Prof. Iván Rojas', meta: '7 min de video', descripcion: 'Frases útiles para moverte en una ciudad de habla inglesa.' },
+  { id: 22, titulo: 'Negociación: cerrar un acuerdo en inglés', tipo: 'guia', tema: 'Business English', nivel: 'Avanzado', autor: 'Prof. Camila Vega', meta: '6 páginas', descripcion: 'Frases clave para negociar términos y condiciones.' },
+  { id: 23, titulo: 'Vocabulario de emociones y sentimientos', tipo: 'vocab', tema: 'Conversación', nivel: 'Intermedio', autor: 'Prof. Marta Díaz', meta: '4 páginas', descripcion: 'Para expresarte con más matiz en conversaciones cotidianas.' },
+  { id: 24, titulo: 'Ejercicios: comparativos y superlativos', tipo: 'ejercicio', tema: 'Gramática', nivel: 'Intermedio', autor: 'Prof. Camila Vega', meta: '14 ejercicios', descripcion: 'Práctica de formas cortas y largas, con excepciones comunes.' }
+];
+
+const TIPO_LABELS = { cartilla: 'CARTILLA', guia: 'GUÍA', vocab: 'VOCABULARIO', ejercicio: 'EJERCICIO', video: 'VIDEO', audio: 'NOTA DE VOZ' };
+const TIPO_ORDER = ['cartilla', 'guia', 'vocab', 'ejercicio', 'video', 'audio'];
+const ACTION_LABELS = { cartilla: 'Descargar PDF', guia: 'Descargar PDF', vocab: 'Descargar PDF', ejercicio: 'Descargar PDF', video: 'Ver video completo', audio: 'Reproducir audio' };
+
+function previewStyleFor(tipo) {
+  const base = 'height:220px;display:flex;align-items:center;justify-content:center;';
+  if (tipo === 'video') return base + 'background:repeating-linear-gradient(135deg,#00043c,#00043c 12px,#060e4b 12px,#060e4b 24px)';
+  if (tipo === 'audio') return base + 'background:repeating-linear-gradient(90deg,#152364,#152364 4px,#00043c 4px,#00043c 8px)';
+  return base + 'background:repeating-linear-gradient(45deg,#e1e1ef,#e1e1ef 14px,#b2c4d8 14px,#b2c4d8 28px)';
+}
+function previewLabelFor(tipo) {
+  if (tipo === 'video') return '▶ vista previa del video';
+  if (tipo === 'audio') return '♪ reproductor de audio';
+  return 'vista previa del documento';
+}
+
+class Component extends DCLogic {
+  state = {
+    view: this.props.vistaInicial === 'biblioteca' ? 'library' : 'login',
+    username: '',
+    password: '',
+    filters: { nivel: 'Todos', tema: 'Todos', tipo: 'Todos' },
+    search: '',
+    selectedId: null
+  };
+
+  temas = ['Gramática', 'Vocabulario', 'Conversación', 'Pronunciación', 'Business English', 'Viajes'];
+
+  decorate(r) {
+    const self = this;
+    return {
+      ...r,
+      tipoLabel: TIPO_LABELS[r.tipo],
+      actionLabel: ACTION_LABELS[r.tipo],
+      previewStyle: previewStyleFor(r.tipo),
+      previewLabel: previewLabelFor(r.tipo),
+      onOpen: () => self.setState({ view: 'detail', selectedId: r.id })
+    };
+  }
+
+  pillOptions(list, current, onPick) {
+    return list.map(label => {
+      const active = current === label;
+      return {
+        label,
+        onClick: () => onPick(label),
+        bg: active ? '#152364' : '#ffffff',
+        color: active ? '#ffffff' : '#00043c',
+        borderColor: active ? '#152364' : '#b2c4d8',
+        weight: active ? 700 : 500
+      };
+    });
+  }
+
+  renderVals() {
+    const showVoiceVideo = this.props.mostrarNotasVoz ?? true;
+    const pool = showVoiceVideo ? RESOURCES : RESOURCES.filter(r => r.tipo !== 'audio' && r.tipo !== 'video');
+    const f = this.state.filters;
+    const search = this.state.search.trim().toLowerCase();
+
+    const filtered = pool.filter(r =>
+      (f.nivel === 'Todos' || r.nivel === f.nivel) &&
+      (f.tema === 'Todos' || r.tema === f.tema) &&
+      (f.tipo === 'Todos' || TIPO_LABELS[r.tipo] === f.tipo) &&
+      (!search || r.titulo.toLowerCase().includes(search))
+    );
+
+    const selected = this.state.selectedId ? this.decorate(RESOURCES.find(r => r.id === this.state.selectedId)) : null;
+    const related = selected ? RESOURCES.filter(r => r.tema === selected.tema && r.id !== selected.id).slice(0, 3).map(r => this.decorate(r)) : [];
+
+    return {
+      isLogin: this.state.view === 'login',
+      isLibrary: this.state.view === 'library',
+      isDetail: this.state.view === 'detail',
+      loginUsername: this.state.username,
+      displayName: this.state.username || 'Estudiante',
+      password: this.state.password,
+      onUsernameChange: e => this.setState({ username: e.target.value }),
+      onPasswordChange: e => this.setState({ password: e.target.value }),
+      doLogin: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ view: 'library' }); },
+      goLibrary: () => this.setState({ view: 'library' }),
+      search: this.state.search,
+      onSearchChange: e => this.setState({ search: e.target.value }),
+      nivelOptions: this.pillOptions(['Todos', 'Básico', 'Intermedio', 'Avanzado'], f.nivel, v => this.setState({ filters: { ...f, nivel: v } })),
+      temaOptions: this.pillOptions(['Todos', ...this.temas], f.tema, v => this.setState({ filters: { ...f, tema: v } })),
+      tipoOptions: this.pillOptions(['Todos', ...TIPO_ORDER.map(t => TIPO_LABELS[t])], f.tipo, v => this.setState({ filters: { ...f, tipo: v } })),
+      filteredResources: filtered.map(r => this.decorate(r)),
+      resultCount: filtered.length,
+      noResults: filtered.length === 0,
+      selectedResource: selected,
+      relatedResources: related
+    };
+  }
+}
+</script>
+</body>
+</html>

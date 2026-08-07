@@ -1,0 +1,48 @@
+import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
+import { AppHeader } from "@/components/AppHeader";
+import { ResourceFields } from "@/components/admin/ResourceFields";
+import { createResource } from "@/lib/actions/admin-resources";
+
+export default async function NuevoRecursoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  await requireAdmin();
+  const { error } = await searchParams;
+
+  return (
+    <div>
+      <AppHeader>
+        <Link
+          href="/admin/recursos"
+          className="ml-auto rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent"
+        >
+          ← Recursos
+        </Link>
+      </AppHeader>
+
+      <div className="mx-auto max-w-[560px] p-10">
+        <div className="mb-6 text-[22px] font-bold">Nuevo recurso</div>
+
+        <form action={createResource} className="flex flex-col gap-[18px]">
+          <ResourceFields />
+
+          {error && (
+            <div className="text-[13px] text-[#c1121f]">
+              Revisa los campos obligatorios e intenta de nuevo.
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="mt-2 rounded bg-accent p-3.5 text-[15px] font-semibold text-white hover:bg-navy"
+          >
+            Crear recurso
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

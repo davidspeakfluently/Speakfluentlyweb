@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "speakfluently-portal",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": [
+        "-c",
+        "PATH=/Users/davidpatino/.nvm/versions/node/v24.19.0/bin:$PATH npm run dev"
+      ],
+      "port": 3000
+    }
+  ]
+}
