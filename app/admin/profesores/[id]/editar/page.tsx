@@ -1,31 +1,42 @@
 import Link from "next/link";
-import { requireStaff } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { requireAdmin } from "@/lib/auth";
+import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
-import { createStudent } from "@/lib/actions/admin-users";
+import { updateTeacher } from "@/lib/actions/admin-teachers";
 
-export default async function NuevoEstudiantePage({
+export default async function EditarProfesorPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
-  await requireStaff();
+  await requireAdmin();
+  const { id } = await params;
   const { error } = await searchParams;
+  const supabase = await createServerSupabase();
+  const { data: teacher } = await supabase.from("profiles").select("*").eq("id", id).single();
+  if (!teacher) notFound();
+
+  const boundUpdate = updateTeacher.bind(null, id);
 
   return (
     <div>
       <AppHeader>
         <Link
-          href="/admin/usuarios"
+          href="/admin/profesores"
           className="self-start rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent sm:ml-auto sm:self-auto"
         >
-          ← Estudiantes
+          ← Profesores
         </Link>
       </AppHeader>
 
       <div className="mx-auto max-w-[480px] p-4 sm:p-6 lg:p-10">
-        <div className="mb-6 text-[22px] font-bold">Nuevo estudiante</div>
+        <div className="mb-1.5 text-[22px] font-bold">{teacher.display_name}</div>
+        <div className="mb-6 text-sm text-accent">{teacher.email}</div>
 
-        <form action={createStudent} className="flex flex-col gap-[18px]">
+        <form action={boundUpdate} className="flex flex-col gap-[18px]">
           <div className="flex flex-col gap-1.5">
             <label className="font-mono text-xs uppercase tracking-[0.04em] text-accent">
               Nombre
@@ -33,41 +44,27 @@ export default async function NuevoEstudiantePage({
             <input
               name="display_name"
               type="text"
-              required
+              defaultValue={teacher.display_name}
               className="rounded border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none focus:border-accent"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="font-mono text-xs uppercase tracking-[0.04em] text-accent">
-              Email
-            </label>
-            <input
-              name="email"
-              type="email"
-              required
-              placeholder="estudiante@correo.com"
-              className="rounded border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none focus:border-accent"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="font-mono text-xs uppercase tracking-[0.04em] text-accent">
-              Contraseña inicial
+              Nueva contraseña (opcional)
             </label>
             <input
               name="password"
               type="text"
-              required
               minLength={8}
-              placeholder="Mínimo 8 caracteres"
+              placeholder="Dejar en blanco para no cambiarla"
               className="rounded border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none focus:border-accent"
             />
           </div>
 
           {error && (
             <div className="text-[13px] text-[#c1121f]">
-              No se pudo crear el estudiante. Revisa los datos e intenta de nuevo.
+              La contraseña debe tener al menos 8 caracteres.
             </div>
           )}
 
@@ -75,7 +72,7 @@ export default async function NuevoEstudiantePage({
             type="submit"
             className="mt-2 rounded bg-accent p-3.5 text-[15px] font-semibold text-white hover:bg-navy"
           >
-            Crear estudiante
+            Guardar cambios
           </button>
         </form>
       </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
 import { updateStudent } from "@/lib/actions/admin-users";
@@ -12,7 +12,7 @@ export default async function EditarEstudiantePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const { error } = await searchParams;
   const supabase = await createServerSupabase();

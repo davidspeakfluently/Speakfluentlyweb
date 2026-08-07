@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { getResource } from "@/lib/queries";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
@@ -11,7 +11,7 @@ export default async function EditarRecursoPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const supabase = await createServerSupabase();
   const resource = await getResource(supabase, id);

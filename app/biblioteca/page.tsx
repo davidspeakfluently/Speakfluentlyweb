@@ -36,7 +36,7 @@ export default async function BibliotecaPage({
       <AppHeader>
         <SearchInput defaultValue={sp.q ?? ""} />
         <div className="flex items-center gap-4">
-          {profile?.role === "admin" && (
+          {(profile?.role === "admin" || profile?.role === "profesor") && (
             <Link href="/admin" className="font-mono text-[13px] text-border hover:text-white">
               Admin
             </Link>

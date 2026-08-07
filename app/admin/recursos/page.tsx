@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
 import { deleteResource } from "@/lib/actions/admin-resources";
 import { TIPO_LABELS } from "@/lib/types";
 
 export default async function AdminRecursosPage() {
-  await requireAdmin();
+  await requireStaff();
   const supabase = await createServerSupabase();
   const { data: resources } = await supabase
     .from("resources")
@@ -65,7 +65,9 @@ export default async function AdminRecursosPage() {
                   <td className="px-5 py-4 text-accent">{r.tema}</td>
                   <td className="px-5 py-4 text-accent">{r.nivel}</td>
                   <td className="px-5 py-4">
-                    {r.storage_path ? (
+                    {r.video_url ? (
+                      <span className="text-accent">Link</span>
+                    ) : r.storage_path ? (
                       <span className="text-accent">Sí</span>
                     ) : (
                       <span className="text-slate">Pendiente</span>

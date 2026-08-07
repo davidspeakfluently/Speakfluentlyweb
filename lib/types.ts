@@ -1,4 +1,4 @@
-export type Role = "admin" | "estudiante";
+export type Role = "admin" | "profesor" | "estudiante";
 
 export type Nivel = "Básico" | "Intermedio" | "Avanzado";
 
@@ -55,6 +55,7 @@ export type Resource = {
   autor: string;
   meta: string;
   storage_path: string | null;
+  video_url: string | null;
   created_by: string | null;
   created_at: string;
 };

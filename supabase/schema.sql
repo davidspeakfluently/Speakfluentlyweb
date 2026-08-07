@@ -9,7 +9,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text not null,
   display_name text not null,
-  role text not null default 'estudiante' check (role in ('admin', 'estudiante')),
+  role text not null default 'estudiante' check (role in ('admin', 'profesor', 'estudiante')),
   created_at timestamptz not null default now()
 );
 
@@ -23,6 +23,7 @@ create table if not exists public.resources (
   autor text not null,
   meta text not null,
   storage_path text,
+  video_url text,
   created_by uuid references public.profiles (id) on delete set null,
   created_at timestamptz not null default now()
 );
@@ -85,6 +86,20 @@ as $$
   );
 $$;
 
+-- is_staff(): admin o profesor — ambos administran estudiantes/recursos;
+-- solo is_admin() puede gestionar cuentas de profesores.
+create or replace function public.is_staff()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.profiles where id = auth.uid() and role in ('admin', 'profesor')
+  );
+$$;
+
 -- ============================================================
 -- RLS
 -- ============================================================
@@ -93,18 +108,18 @@ alter table public.profiles enable row level security;
 alter table public.resources enable row level security;
 alter table public.progress enable row level security;
 
--- profiles: cada quien lee su propia fila; admin lee todas.
+-- profiles: cada quien lee su propia fila; staff (admin/profesor) lee todas.
 drop policy if exists profiles_select on public.profiles;
 create policy profiles_select on public.profiles
   for select to authenticated
-  using (id = auth.uid() or public.is_admin());
+  using (id = auth.uid() or public.is_staff());
 
--- profiles: admin puede actualizar cualquier fila (p.ej. display_name).
+-- profiles: staff puede actualizar cualquier fila (p.ej. display_name).
 drop policy if exists profiles_update_admin on public.profiles;
 create policy profiles_update_admin on public.profiles
   for update to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
+  using (public.is_staff())
+  with check (public.is_staff());
 
 -- resources: cualquier usuario autenticado puede leer.
 drop policy if exists resources_select on public.resources;
@@ -112,12 +127,12 @@ create policy resources_select on public.resources
   for select to authenticated
   using (true);
 
--- resources: solo admin puede crear/editar/eliminar.
+-- resources: admin o profesor pueden crear/editar/eliminar.
 drop policy if exists resources_write_admin on public.resources;
 create policy resources_write_admin on public.resources
   for all to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
+  using (public.is_staff())
+  with check (public.is_staff());
 
 -- progress: cada estudiante solo ve/edita su propio progreso.
 drop policy if exists progress_own on public.progress;

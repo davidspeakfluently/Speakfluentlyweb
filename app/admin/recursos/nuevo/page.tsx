@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { ResourceForm } from "@/components/admin/ResourceForm";
 
 export default async function NuevoRecursoPage() {
-  await requireAdmin();
+  await requireStaff();
 
   return (
     <div>

@@ -23,6 +23,7 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tipo, setTipo] = useState<Tipo | "">(resource?.tipo ?? "");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,6 +39,10 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
       nivel: String(formData.get("nivel") ?? "") as Nivel,
       autor: String(formData.get("autor") ?? "").trim(),
       meta: String(formData.get("meta") ?? "").trim(),
+      video_url:
+        String(formData.get("tipo") ?? "") === "video"
+          ? String(formData.get("video_url") ?? "").trim() || null
+          : null,
     };
 
     setStatus("Guardando datos…");
@@ -143,7 +148,8 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
           <select
             name="tipo"
             required
-            defaultValue={resource?.tipo ?? ""}
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value as Tipo)}
             className={inputClass}
           >
             <option value="" disabled>
@@ -234,6 +240,22 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
           </label>
         )}
       </div>
+
+      {tipo === "video" && (
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>O link de YouTube / Vimeo</label>
+          <input
+            name="video_url"
+            type="url"
+            defaultValue={resource?.video_url ?? ""}
+            placeholder="https://www.youtube.com/watch?v=…"
+            className={inputClass}
+          />
+          <div className="text-[13px] text-slate">
+            Si pegas un link, se usa en vez del archivo subido — no hace falta subir video.
+          </div>
+        </div>
+      )}
 
       {error && <div className="text-[13px] text-[#c1121f]">{error}</div>}
       {status && !error && <div className="text-[13px] text-slate">{status}</div>}

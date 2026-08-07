@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin") {
+    if (profile?.role !== "admin" && profile?.role !== "profesor") {
       const url = request.nextUrl.clone();
       url.pathname = "/biblioteca";
       return NextResponse.redirect(url);

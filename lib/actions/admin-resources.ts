@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { createUploadTarget, deleteResourceFile } from "@/lib/storage";
 import type { Nivel, Tipo } from "@/lib/types";
@@ -14,6 +14,7 @@ export interface ResourceFieldsInput {
   nivel: Nivel;
   autor: string;
   meta: string;
+  video_url: string | null;
 }
 
 export type ActionResult<T = Record<string, never>> = { error: string } | T;
@@ -28,7 +29,7 @@ function validate(fields: ResourceFieldsInput) {
 export async function createResourceRecord(
   fields: ResourceFieldsInput,
 ): Promise<ActionResult<{ id: string }>> {
-  const { user } = await requireAdmin();
+  const { user } = await requireStaff();
   if (!validate(fields)) return { error: "Faltan campos obligatorios." };
 
   const admin = createAdminSupabase();
@@ -49,7 +50,7 @@ export async function updateResourceRecord(
   id: string,
   fields: ResourceFieldsInput,
 ): Promise<ActionResult> {
-  await requireAdmin();
+  await requireStaff();
   if (!validate(fields)) return { error: "Faltan campos obligatorios." };
 
   const admin = createAdminSupabase();
@@ -71,7 +72,7 @@ export async function getResourceUploadTarget(
   resourceId: string,
   fileName: string,
 ): Promise<ActionResult<{ path: string; token: string }>> {
-  await requireAdmin();
+  await requireStaff();
   const path = `${resourceId}/${crypto.randomUUID()}-${fileName}`;
   const target = await createUploadTarget(path);
   if (!target) return { error: "No se pudo preparar la subida." };
@@ -84,7 +85,7 @@ export async function finalizeResourceFile(
   path: string,
   previousPath?: string | null,
 ): Promise<ActionResult> {
-  await requireAdmin();
+  await requireStaff();
   if (previousPath) await deleteResourceFile(previousPath);
 
   const admin = createAdminSupabase();
@@ -105,7 +106,7 @@ export async function removeResourceFile(
   resourceId: string,
   currentPath: string,
 ): Promise<ActionResult> {
-  await requireAdmin();
+  await requireStaff();
   await deleteResourceFile(currentPath);
 
   const admin = createAdminSupabase();
@@ -123,7 +124,7 @@ export async function removeResourceFile(
 }
 
 export async function deleteResource(id: string) {
-  await requireAdmin();
+  await requireStaff();
   const admin = createAdminSupabase();
   const { data: current } = await admin
     .from("resources")

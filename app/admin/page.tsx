@@ -1,16 +1,21 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
 
 export default async function AdminPage() {
-  await requireAdmin();
+  const { profile } = await requireStaff();
   const supabase = await createServerSupabase();
 
-  const [{ count: studentCount }, { count: resourceCount }] = await Promise.all([
-    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "estudiante"),
-    supabase.from("resources").select("*", { count: "exact", head: true }),
-  ]);
+  const [{ count: studentCount }, { count: resourceCount }, { count: teacherCount }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "estudiante"),
+      supabase.from("resources").select("*", { count: "exact", head: true }),
+      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "profesor"),
+    ]);
 
   return (
     <div>
@@ -52,6 +57,21 @@ export default async function AdminPage() {
               Crear, editar, subir archivos y eliminar recursos.
             </div>
           </Link>
+
+          {profile.role === "admin" && (
+            <Link
+              href="/admin/profesores"
+              className="rounded border border-border bg-white p-6 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,4,60,0.12)]"
+            >
+              <div className="font-mono text-xs uppercase tracking-[0.06em] text-slate">
+                Profesores
+              </div>
+              <div className="mt-2 text-2xl font-bold">{teacherCount ?? 0}</div>
+              <div className="mt-2 text-sm text-accent">
+                Crear y gestionar cuentas de profesores.
+              </div>
+            </Link>
+          )}
         </div>
       </div>
     </div>

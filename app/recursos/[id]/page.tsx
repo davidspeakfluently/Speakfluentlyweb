@@ -5,6 +5,7 @@ import { getRelatedResources, getResource, isCompleted } from "@/lib/queries";
 import { getSignedFileUrl } from "@/lib/storage";
 import { ACTION_LABELS, TIPO_LABELS } from "@/lib/types";
 import { previewClassFor, previewLabelFor } from "@/lib/resource-ui";
+import { getVideoEmbedUrl } from "@/lib/video";
 import { AppHeader } from "@/components/AppHeader";
 import { toggleCompleted } from "@/lib/actions/progress";
 
@@ -29,6 +30,7 @@ export default async function ResourceDetailPage({
   ]);
 
   const boundToggle = toggleCompleted.bind(null, resource.id);
+  const embedUrl = resource.video_url ? getVideoEmbedUrl(resource.video_url) : null;
 
   return (
     <div>
@@ -66,7 +68,14 @@ export default async function ResourceDetailPage({
           </div>
 
           <div className="mt-8 overflow-hidden rounded-md border border-border bg-white">
-            {fileUrl && resource.tipo === "video" ? (
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                className="aspect-video w-full bg-navy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : fileUrl && resource.tipo === "video" ? (
               <video controls src={fileUrl} className="aspect-video w-full bg-navy" />
             ) : fileUrl && resource.tipo === "audio" ? (
               <div className="flex h-[220px] items-center justify-center bg-navy p-6">
@@ -87,7 +96,16 @@ export default async function ResourceDetailPage({
             )}
 
             <div className="flex flex-wrap gap-3 p-4 sm:p-5">
-              {fileUrl ? (
+              {resource.video_url ? (
+                <a
+                  href={resource.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-navy"
+                >
+                  {ACTION_LABELS[resource.tipo]}
+                </a>
+              ) : fileUrl ? (
                 <a
                   href={fileUrl}
                   target="_blank"

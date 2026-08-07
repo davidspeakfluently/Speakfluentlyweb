@@ -1,39 +1,37 @@
 import Link from "next/link";
-import { requireStaff } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
-import { deleteStudent } from "@/lib/actions/admin-users";
+import { deleteTeacher } from "@/lib/actions/admin-teachers";
 
-export default async function AdminUsuariosPage() {
-  await requireStaff();
+export default async function AdminProfesoresPage() {
+  await requireAdmin();
   const supabase = await createServerSupabase();
-  const { data: students } = await supabase
+  const { data: teachers } = await supabase
     .from("profiles")
     .select("*")
-    .eq("role", "estudiante")
+    .eq("role", "profesor")
     .order("created_at", { ascending: false });
 
   return (
     <div>
       <AppHeader>
-        <div className="flex gap-3 self-start sm:ml-auto sm:self-auto">
-          <Link
-            href="/admin"
-            className="rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent"
-          >
-            ← Admin
-          </Link>
-        </div>
+        <Link
+          href="/admin"
+          className="self-start rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent sm:ml-auto sm:self-auto"
+        >
+          ← Admin
+        </Link>
       </AppHeader>
 
       <div className="mx-auto max-w-[1400px] p-4 sm:p-6 lg:p-10">
         <div className="mb-6 flex items-center justify-between">
-          <div className="text-[22px] font-bold">Estudiantes</div>
+          <div className="text-[22px] font-bold">Profesores</div>
           <Link
-            href="/admin/usuarios/nuevo"
+            href="/admin/profesores/nuevo"
             className="rounded bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-navy"
           >
-            + Nuevo estudiante
+            + Nuevo profesor
           </Link>
         </div>
 
@@ -51,19 +49,19 @@ export default async function AdminUsuariosPage() {
               </tr>
             </thead>
             <tbody>
-              {students?.map((s) => (
-                <tr key={s.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-4 font-semibold">{s.display_name}</td>
-                  <td className="px-5 py-4 text-accent">{s.email}</td>
+              {teachers?.map((t) => (
+                <tr key={t.id} className="border-b border-border last:border-0">
+                  <td className="px-5 py-4 font-semibold">{t.display_name}</td>
+                  <td className="px-5 py-4 text-accent">{t.email}</td>
                   <td className="px-5 py-4">
                     <div className="flex justify-end gap-4">
                       <Link
-                        href={`/admin/usuarios/${s.id}/editar`}
+                        href={`/admin/profesores/${t.id}/editar`}
                         className="text-accent hover:underline"
                       >
                         Editar
                       </Link>
-                      <form action={deleteStudent.bind(null, s.id)}>
+                      <form action={deleteTeacher.bind(null, t.id)}>
                         <button type="submit" className="text-[#c1121f] hover:underline">
                           Eliminar
                         </button>
@@ -72,10 +70,10 @@ export default async function AdminUsuariosPage() {
                   </td>
                 </tr>
               ))}
-              {students?.length === 0 && (
+              {teachers?.length === 0 && (
                 <tr>
                   <td colSpan={3} className="px-5 py-10 text-center text-slate">
-                    Todavía no hay estudiantes. Crea el primero.
+                    Todavía no hay profesores. Crea el primero.
                   </td>
                 </tr>
               )}
