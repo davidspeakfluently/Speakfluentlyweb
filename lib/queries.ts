@@ -1,7 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Profile, Resource, Tipo } from "@/lib/types";
-import { TIPO_LABELS } from "@/lib/types";
+import type { Database, Profile, Resource, Tema, TipoRecurso } from "@/lib/types";
 
 type DB = SupabaseClient<Database>;
 
@@ -10,16 +9,21 @@ export async function getProfile(supabase: DB, userId: string): Promise<Profile 
   return data;
 }
 
+export async function getTemas(supabase: DB): Promise<Tema[]> {
+  const { data } = await supabase.from("temas").select("*").order("orden");
+  return data ?? [];
+}
+
+export async function getTiposRecurso(supabase: DB): Promise<TipoRecurso[]> {
+  const { data } = await supabase.from("tipos_recurso").select("*").order("orden");
+  return data ?? [];
+}
+
 export interface ResourceFilters {
   nivel?: string;
   tema?: string;
-  tipo?: string; // TIPO_LABEL, e.g. "GUÍA"
+  tipo?: string; // key de tipos_recurso, ej. "guia"
   q?: string;
-}
-
-function tipoKeyFromLabel(label: string): Tipo | null {
-  const entry = Object.entries(TIPO_LABELS).find(([, v]) => v === label);
-  return (entry?.[0] as Tipo) ?? null;
 }
 
 export async function getFilteredResources(
@@ -35,8 +39,7 @@ export async function getFilteredResources(
     query = query.eq("tema", filters.tema);
   }
   if (filters.tipo && filters.tipo !== "Todos") {
-    const key = tipoKeyFromLabel(filters.tipo);
-    if (key) query = query.eq("tipo", key);
+    query = query.eq("tipo", filters.tipo);
   }
   if (filters.q?.trim()) {
     query = query.ilike("titulo", `%${filters.q.trim()}%`);

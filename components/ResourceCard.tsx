@@ -1,8 +1,7 @@
 import Link from "next/link";
 import type { Resource } from "@/lib/types";
-import { TIPO_LABELS } from "@/lib/types";
 
-export function ResourceCard({ resource }: { resource: Resource }) {
+export function ResourceCard({ resource, tipoLabel }: { resource: Resource; tipoLabel: string }) {
   return (
     <Link
       href={`/recursos/${resource.id}`}
@@ -10,7 +9,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
     >
       <div className="flex items-center justify-between">
         <span className="rounded-[3px] bg-accent px-2 py-1 font-mono text-[11px] tracking-[0.06em] text-white">
-          {TIPO_LABELS[resource.tipo]}
+          {tipoLabel}
         </span>
         <span className="font-mono text-[11px] text-slate">{resource.nivel}</span>
       </div>

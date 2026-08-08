@@ -58,6 +58,18 @@ export default async function AdminPage() {
             </div>
           </Link>
 
+          <Link
+            href="/admin/categorias"
+            className="rounded border border-border bg-white p-6 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,4,60,0.12)]"
+          >
+            <div className="font-mono text-xs uppercase tracking-[0.06em] text-slate">
+              Categorías
+            </div>
+            <div className="mt-2 text-sm text-accent">
+              Editar los temas y tipos de recurso disponibles.
+            </div>
+          </Link>
+
           {profile.role === "admin" && (
             <Link
               href="/admin/profesores"

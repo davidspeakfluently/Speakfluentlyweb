@@ -4,12 +4,12 @@ import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { createUploadTarget, deleteResourceFile } from "@/lib/storage";
-import type { Nivel, Tipo } from "@/lib/types";
+import type { Nivel } from "@/lib/types";
 
 export interface ResourceFieldsInput {
   titulo: string;
   descripcion: string;
-  tipo: Tipo;
+  tipo: string;
   tema: string;
   nivel: Nivel;
   autor: string;

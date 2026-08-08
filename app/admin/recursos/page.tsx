@@ -3,15 +3,16 @@ import { requireStaff } from "@/lib/auth";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
 import { deleteResource } from "@/lib/actions/admin-resources";
-import { TIPO_LABELS } from "@/lib/types";
+import { getTiposRecurso } from "@/lib/queries";
 
 export default async function AdminRecursosPage() {
   await requireStaff();
   const supabase = await createServerSupabase();
-  const { data: resources } = await supabase
-    .from("resources")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [{ data: resources }, tipos] = await Promise.all([
+    supabase.from("resources").select("*").order("created_at", { ascending: false }),
+    getTiposRecurso(supabase),
+  ]);
+  const tipoLabelByKey = Object.fromEntries(tipos.map((t) => [t.key, t.label]));
 
   return (
     <div>
@@ -61,7 +62,7 @@ export default async function AdminRecursosPage() {
               {resources?.map((r) => (
                 <tr key={r.id} className="border-b border-border last:border-0">
                   <td className="px-5 py-4 font-semibold">{r.titulo}</td>
-                  <td className="px-5 py-4 text-accent">{TIPO_LABELS[r.tipo]}</td>
+                  <td className="px-5 py-4 text-accent">{tipoLabelByKey[r.tipo] ?? r.tipo}</td>
                   <td className="px-5 py-4 text-accent">{r.tema}</td>
                   <td className="px-5 py-4 text-accent">{r.nivel}</td>
                   <td className="px-5 py-4">

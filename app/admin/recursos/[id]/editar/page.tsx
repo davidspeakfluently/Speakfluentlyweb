@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/auth";
-import { getResource } from "@/lib/queries";
+import { getResource, getTemas, getTiposRecurso } from "@/lib/queries";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/AppHeader";
 import { ResourceForm } from "@/components/admin/ResourceForm";
@@ -14,7 +14,11 @@ export default async function EditarRecursoPage({
   await requireStaff();
   const { id } = await params;
   const supabase = await createServerSupabase();
-  const resource = await getResource(supabase, id);
+  const [resource, temas, tipos] = await Promise.all([
+    getResource(supabase, id),
+    getTemas(supabase),
+    getTiposRecurso(supabase),
+  ]);
   if (!resource) notFound();
 
   return (
@@ -30,7 +34,7 @@ export default async function EditarRecursoPage({
 
       <div className="mx-auto max-w-[560px] p-4 sm:p-6 lg:p-10">
         <div className="mb-6 text-[22px] font-bold">Editar recurso</div>
-        <ResourceForm resource={resource} />
+        <ResourceForm resource={resource} temas={temas} tipos={tipos} />
       </div>
     </div>
   );

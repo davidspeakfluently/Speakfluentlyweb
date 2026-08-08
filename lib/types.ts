@@ -2,40 +2,16 @@ export type Role = "admin" | "profesor" | "estudiante";
 
 export type Nivel = "Básico" | "Intermedio" | "Avanzado";
 
-export type Tipo = "cartilla" | "guia" | "vocab" | "ejercicio" | "video" | "audio";
-
-export const TIPO_LABELS: Record<Tipo, string> = {
-  cartilla: "CARTILLA",
-  guia: "GUÍA",
-  vocab: "VOCABULARIO",
-  ejercicio: "EJERCICIO",
-  video: "VIDEO",
-  audio: "NOTA DE VOZ",
-};
-
-export const TIPO_ORDER: Tipo[] = ["cartilla", "guia", "vocab", "ejercicio", "video", "audio"];
-
-export const ACTION_LABELS: Record<Tipo, string> = {
-  cartilla: "Descargar PDF",
-  guia: "Descargar PDF",
-  vocab: "Descargar PDF",
-  ejercicio: "Descargar PDF",
-  video: "Ver video completo",
-  audio: "Reproducir audio",
-};
-
 export const NIVELES: Nivel[] = ["Básico", "Intermedio", "Avanzado"];
 
-export const TEMAS = [
-  "Gramática",
-  "Vocabulario",
-  "Conversación",
-  "Pronunciación",
-  "Business English",
-  "Viajes",
-] as const;
+/** Comportamiento de reproducción/descarga — determina qué player se usa. */
+export type Kind = "documento" | "audio" | "video";
 
-export type Tema = (typeof TEMAS)[number];
+export const ACTION_LABEL_BY_KIND: Record<Kind, string> = {
+  documento: "Descargar PDF",
+  audio: "Reproducir audio",
+  video: "Ver video completo",
+};
 
 export type Profile = {
   id: string;
@@ -45,11 +21,26 @@ export type Profile = {
   created_at: string;
 };
 
+export type Tema = {
+  id: string;
+  nombre: string;
+  orden: number;
+  created_at: string;
+};
+
+export type TipoRecurso = {
+  key: string;
+  label: string;
+  kind: Kind;
+  orden: number;
+  created_at: string;
+};
+
 export type Resource = {
   id: string;
   titulo: string;
   descripcion: string;
-  tipo: Tipo;
+  tipo: string;
   tema: string;
   nivel: Nivel;
   autor: string;
@@ -75,12 +66,24 @@ export type Database = {
         Update: Partial<Profile>;
         Relationships: [];
       };
+      temas: {
+        Row: Tema;
+        Insert: Partial<Tema> & { nombre: string };
+        Update: Partial<Tema>;
+        Relationships: [];
+      };
+      tipos_recurso: {
+        Row: TipoRecurso;
+        Insert: Partial<TipoRecurso> & { key: string; label: string; kind: Kind };
+        Update: Partial<TipoRecurso>;
+        Relationships: [];
+      };
       resources: {
         Row: Resource;
         Insert: Partial<Resource> & {
           titulo: string;
           descripcion: string;
-          tipo: Tipo;
+          tipo: string;
           tema: string;
           nivel: Nivel;
           autor: string;

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { getFilteredResources, getProfile } from "@/lib/queries";
-import { NIVELES, TEMAS, TIPO_LABELS, TIPO_ORDER } from "@/lib/types";
+import { getFilteredResources, getProfile, getTemas, getTiposRecurso } from "@/lib/queries";
+import { NIVELES } from "@/lib/types";
 import { AppHeader } from "@/components/AppHeader";
 import { SearchInput } from "@/components/SearchInput";
-import { FilterGroup } from "@/components/FilterGroup";
+import { FilterGroup, type FilterOption } from "@/components/FilterGroup";
 import { ResourceCard } from "@/components/ResourceCard";
 import { signOut } from "@/lib/actions/auth";
 
@@ -20,7 +20,11 @@ export default async function BibliotecaPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const profile = user ? await getProfile(supabase, user.id) : null;
+  const [profile, temas, tipos] = await Promise.all([
+    user ? getProfile(supabase, user.id) : Promise.resolve(null),
+    getTemas(supabase),
+    getTiposRecurso(supabase),
+  ]);
 
   const resources = await getFilteredResources(supabase, {
     nivel: sp.nivel,
@@ -29,7 +33,20 @@ export default async function BibliotecaPage({
     q: sp.q,
   });
 
-  const tipoOptions = ["Todos", ...TIPO_ORDER.map((t) => TIPO_LABELS[t])];
+  const tipoLabelByKey = Object.fromEntries(tipos.map((t) => [t.key, t.label]));
+
+  const nivelOptions: FilterOption[] = [
+    { value: "Todos", label: "Todos" },
+    ...NIVELES.map((n) => ({ value: n, label: n })),
+  ];
+  const temaOptions: FilterOption[] = [
+    { value: "Todos", label: "Todos" },
+    ...temas.map((t) => ({ value: t.nombre, label: t.nombre })),
+  ];
+  const tipoOptions: FilterOption[] = [
+    { value: "Todos", label: "Todos" },
+    ...tipos.map((t) => ({ value: t.key, label: t.label })),
+  ];
 
   return (
     <div>
@@ -59,14 +76,14 @@ export default async function BibliotecaPage({
         <div className="flex flex-col gap-5 lg:gap-7">
           <FilterGroup
             label="Nivel"
-            options={["Todos", ...NIVELES]}
+            options={nivelOptions}
             current={sp.nivel ?? "Todos"}
             paramKey="nivel"
             searchParams={sp}
           />
           <FilterGroup
             label="Tema"
-            options={["Todos", ...TEMAS]}
+            options={temaOptions}
             current={sp.tema ?? "Todos"}
             paramKey="tema"
             searchParams={sp}
@@ -92,7 +109,7 @@ export default async function BibliotecaPage({
 
           <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-[18px]">
             {resources.map((r) => (
-              <ResourceCard key={r.id} resource={r} />
+              <ResourceCard key={r.id} resource={r} tipoLabel={tipoLabelByKey[r.tipo] ?? r.tipo} />
             ))}
           </div>
 

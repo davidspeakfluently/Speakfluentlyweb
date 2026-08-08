@@ -10,20 +10,29 @@ import {
   removeResourceFile,
   updateResourceRecord,
 } from "@/lib/actions/admin-resources";
-import { NIVELES, TEMAS, TIPO_LABELS, TIPO_ORDER } from "@/lib/types";
-import type { Nivel, Resource, Tipo } from "@/lib/types";
+import { NIVELES } from "@/lib/types";
+import type { Nivel, Resource, Tema, TipoRecurso } from "@/lib/types";
 
 const inputClass =
   "rounded border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none focus:border-accent";
 const labelClass = "font-mono text-xs uppercase tracking-[0.04em] text-accent";
 
-export function ResourceForm({ resource }: { resource?: Resource }) {
+export function ResourceForm({
+  resource,
+  temas,
+  tipos,
+}: {
+  resource?: Resource;
+  temas: Tema[];
+  tipos: TipoRecurso[];
+}) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tipo, setTipo] = useState<Tipo | "">(resource?.tipo ?? "");
+  const [tipoKey, setTipoKey] = useState(resource?.tipo ?? "");
+  const selectedKind = tipos.find((t) => t.key === tipoKey)?.kind;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,18 +40,18 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
     setSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
+    const selectedTipoKey = String(formData.get("tipo") ?? "");
+    const kind = tipos.find((t) => t.key === selectedTipoKey)?.kind;
     const fields = {
       titulo: String(formData.get("titulo") ?? "").trim(),
       descripcion: String(formData.get("descripcion") ?? "").trim(),
-      tipo: String(formData.get("tipo") ?? "") as Tipo,
+      tipo: selectedTipoKey,
       tema: String(formData.get("tema") ?? "").trim(),
       nivel: String(formData.get("nivel") ?? "") as Nivel,
       autor: String(formData.get("autor") ?? "").trim(),
       meta: String(formData.get("meta") ?? "").trim(),
       video_url:
-        String(formData.get("tipo") ?? "") === "video"
-          ? String(formData.get("video_url") ?? "").trim() || null
-          : null,
+        kind === "video" ? String(formData.get("video_url") ?? "").trim() || null : null,
     };
 
     setStatus("Guardando datos…");
@@ -148,16 +157,16 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
           <select
             name="tipo"
             required
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value as Tipo)}
+            value={tipoKey}
+            onChange={(e) => setTipoKey(e.target.value)}
             className={inputClass}
           >
             <option value="" disabled>
               Elige un tipo
             </option>
-            {TIPO_ORDER.map((t) => (
-              <option key={t} value={t}>
-                {TIPO_LABELS[t]}
+            {tipos.map((t) => (
+              <option key={t.key} value={t.key}>
+                {t.label}
               </option>
             ))}
           </select>
@@ -189,9 +198,9 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
           <option value="" disabled>
             Elige un tema
           </option>
-          {TEMAS.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          {temas.map((t) => (
+            <option key={t.id} value={t.nombre}>
+              {t.nombre}
             </option>
           ))}
         </select>
@@ -241,7 +250,7 @@ export function ResourceForm({ resource }: { resource?: Resource }) {
         )}
       </div>
 
-      {tipo === "video" && (
+      {selectedKind === "video" && (
         <div className="flex flex-col gap-1.5">
           <label className={labelClass}>O link de YouTube / Vimeo</label>
           <input
