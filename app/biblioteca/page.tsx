@@ -1,6 +1,13 @@
 import Link from "next/link";
+import { LogOut, SearchX } from "lucide-react";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { getFilteredResources, getProfile, getTemas, getTiposRecurso } from "@/lib/queries";
+import {
+  getCompletedResourceIds,
+  getFilteredResources,
+  getProfile,
+  getTemas,
+  getTiposRecurso,
+} from "@/lib/queries";
 import { NIVELES } from "@/lib/types";
 import { AppHeader } from "@/components/AppHeader";
 import { SearchInput } from "@/components/SearchInput";
@@ -20,10 +27,11 @@ export default async function BibliotecaPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const [profile, temas, tipos] = await Promise.all([
+  const [profile, temas, tipos, completedIds] = await Promise.all([
     user ? getProfile(supabase, user.id) : Promise.resolve(null),
     getTemas(supabase),
     getTiposRecurso(supabase),
+    user ? getCompletedResourceIds(supabase, user.id) : Promise.resolve(new Set<string>()),
   ]);
 
   const resources = await getFilteredResources(supabase, {
@@ -33,6 +41,7 @@ export default async function BibliotecaPage({
     q: sp.q,
   });
 
+  const tipoByKey = Object.fromEntries(tipos.map((t) => [t.key, t]));
   const tipoLabelByKey = Object.fromEntries(tipos.map((t) => [t.key, t.label]));
 
   const nivelOptions: FilterOption[] = [
@@ -64,8 +73,9 @@ export default async function BibliotecaPage({
           <form action={signOut}>
             <button
               type="submit"
-              className="font-mono text-[13px] text-slate hover:text-border"
+              className="flex items-center gap-1.5 font-mono text-[13px] text-slate hover:text-border"
             >
+              <LogOut className="h-3.5 w-3.5" />
               Salir
             </button>
           </form>
@@ -109,12 +119,19 @@ export default async function BibliotecaPage({
 
           <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-[18px]">
             {resources.map((r) => (
-              <ResourceCard key={r.id} resource={r} tipoLabel={tipoLabelByKey[r.tipo] ?? r.tipo} />
+              <ResourceCard
+                key={r.id}
+                resource={r}
+                tipoLabel={tipoLabelByKey[r.tipo] ?? r.tipo}
+                kind={tipoByKey[r.tipo]?.kind}
+                completed={completedIds.has(r.id)}
+              />
             ))}
           </div>
 
           {resources.length === 0 && (
-            <div className="py-[60px] text-center text-[15px] text-slate">
+            <div className="flex flex-col items-center gap-3 py-[60px] text-center text-[15px] text-slate">
+              <SearchX className="h-8 w-8 text-border" />
               No encontramos recursos con esos filtros. Prueba con otra combinación.
             </div>
           )}

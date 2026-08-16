@@ -83,3 +83,11 @@ export async function isCompleted(
     .maybeSingle();
   return !!data;
 }
+
+export async function getCompletedResourceIds(
+  supabase: DB,
+  userId: string,
+): Promise<Set<string>> {
+  const { data } = await supabase.from("progress").select("resource_id").eq("user_id", userId);
+  return new Set((data ?? []).map((row) => row.resource_id));
+}

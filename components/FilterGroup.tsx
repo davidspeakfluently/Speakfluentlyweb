@@ -41,10 +41,10 @@ export function FilterGroup({
               key={option.value}
               href={qs ? `/biblioteca?${qs}` : "/biblioteca"}
               className={
-                "shrink-0 whitespace-nowrap rounded px-3 py-[9px] text-left text-sm lg:shrink lg:whitespace-normal " +
+                "shrink-0 whitespace-nowrap rounded-md px-3 py-[9px] text-left text-sm transition-colors duration-[var(--transition-hover)] lg:shrink lg:whitespace-normal " +
                 (active
                   ? "border border-accent bg-accent font-bold text-white"
-                  : "border border-border bg-white font-medium text-navy")
+                  : "border border-border bg-white font-medium text-navy hover:border-slate")
               }
             >
               {option.label}

@@ -7,6 +7,22 @@
   --color-slate: #6687bb;
   --color-border: #b2c4d8;
   --color-bg: #e1e1ef;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --shadow-card: 0 8px 20px rgba(0, 4, 60, 0.12);
+  --shadow-card-lift: 0 12px 28px rgba(0, 4, 60, 0.16);
+
+  --transition-hover: 200ms;
+
+  --color-nivel-basico-bg: var(--color-bg);
+  --color-nivel-basico-text: var(--color-slate);
+  --color-nivel-intermedio-bg: #d3daf0;
+  --color-nivel-intermedio-text: var(--color-accent);
+  --color-nivel-avanzado-bg: var(--color-accent);
+  --color-nivel-avanzado-text: white;
 }
 
 @theme inline {

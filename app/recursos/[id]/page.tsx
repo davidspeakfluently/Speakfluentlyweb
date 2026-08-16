@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, CircleCheck } from "lucide-react";
 import { createServerSupabase } from "@/lib/supabase/server";
 import {
+  getCompletedResourceIds,
   getRelatedResources,
   getResource,
   getTiposRecurso,
@@ -9,9 +11,10 @@ import {
 } from "@/lib/queries";
 import { getSignedFileUrl } from "@/lib/storage";
 import { ACTION_LABEL_BY_KIND } from "@/lib/types";
-import { previewClassFor, previewLabelFor } from "@/lib/resource-ui";
+import { nivelBadgeClassFor, previewClassFor, previewIconFor, previewLabelFor } from "@/lib/resource-ui";
 import { getVideoEmbedUrl } from "@/lib/video";
 import { AppHeader } from "@/components/AppHeader";
+import { ResourceCard } from "@/components/ResourceCard";
 import { toggleCompleted } from "@/lib/actions/progress";
 
 export default async function ResourceDetailPage({
@@ -28,11 +31,12 @@ export default async function ResourceDetailPage({
   const resource = await getResource(supabase, id);
   if (!resource) notFound();
 
-  const [related, completed, fileUrl, tipos] = await Promise.all([
+  const [related, completed, fileUrl, tipos, completedIds] = await Promise.all([
     getRelatedResources(supabase, resource.tema, resource.id),
     user ? isCompleted(supabase, user.id, resource.id) : Promise.resolve(false),
     resource.storage_path ? getSignedFileUrl(resource.storage_path) : Promise.resolve(null),
     getTiposRecurso(supabase),
+    user ? getCompletedResourceIds(supabase, user.id) : Promise.resolve(new Set<string>()),
   ]);
 
   const tipoByKey = Object.fromEntries(tipos.map((t) => [t.key, t]));
@@ -43,28 +47,32 @@ export default async function ResourceDetailPage({
 
   const boundToggle = toggleCompleted.bind(null, resource.id);
   const embedUrl = resource.video_url ? getVideoEmbedUrl(resource.video_url) : null;
+  const PreviewIcon = previewIconFor(kind);
 
   return (
     <div>
       <AppHeader>
         <Link
           href="/biblioteca"
-          className="self-start rounded border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg hover:bg-accent sm:ml-auto sm:self-auto"
+          className="flex items-center gap-1.5 self-start rounded-md border border-accent bg-navy-2 px-4 py-[9px] text-[13px] text-bg transition-colors duration-[var(--transition-hover)] hover:bg-accent sm:ml-auto sm:self-auto"
         >
-          ← Volver a la biblioteca
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Volver a la biblioteca
         </Link>
       </AppHeader>
 
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 p-4 sm:p-6 lg:grid-cols-[1fr_300px] lg:gap-10 lg:p-10">
         <div>
           <div className="mb-4 flex flex-wrap gap-2">
-            <span className="rounded-[3px] bg-accent px-2 py-1 font-mono text-[11px] tracking-[0.06em] text-white">
+            <span className="rounded-sm bg-accent px-2 py-1 font-mono text-[11px] tracking-[0.06em] text-white">
               {tipoLabel}
             </span>
-            <span className="rounded-[3px] border border-border px-2 py-1 font-mono text-[11px] text-accent">
+            <span
+              className={"rounded-sm px-2 py-1 font-mono text-[11px] " + nivelBadgeClassFor(resource.nivel)}
+            >
               {resource.nivel}
             </span>
-            <span className="rounded-[3px] border border-border px-2 py-1 font-mono text-[11px] text-accent">
+            <span className="rounded-sm border border-border px-2 py-1 font-mono text-[11px] text-accent">
               {resource.tema}
             </span>
           </div>
@@ -79,7 +87,7 @@ export default async function ResourceDetailPage({
             Por {resource.autor} · {resource.meta}
           </div>
 
-          <div className="mt-8 overflow-hidden rounded-md border border-border bg-white">
+          <div className="mt-8 overflow-hidden rounded-lg border border-border bg-white">
             {embedUrl ? (
               <iframe
                 src={embedUrl}
@@ -99,7 +107,8 @@ export default async function ResourceDetailPage({
               <div
                 className={`flex h-[220px] items-center justify-center ${previewClassFor(kind)}`}
               >
-                <div className="rounded bg-white px-3 py-1.5 font-mono text-[13px] text-accent">
+                <div className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 font-mono text-[13px] text-accent">
+                  <PreviewIcon className="h-4 w-4" />
                   {previewLabelFor(kind)}
                 </div>
               </div>
@@ -111,7 +120,7 @@ export default async function ResourceDetailPage({
                   href={resource.video_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-navy"
+                  className="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors duration-[var(--transition-hover)] hover:bg-navy"
                 >
                   {actionLabel}
                 </a>
@@ -121,7 +130,7 @@ export default async function ResourceDetailPage({
                   target="_blank"
                   rel="noopener noreferrer"
                   download={kind === "documento"}
-                  className="rounded bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-navy"
+                  className="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors duration-[var(--transition-hover)] hover:bg-navy"
                 >
                   {actionLabel}
                 </a>
@@ -129,7 +138,7 @@ export default async function ResourceDetailPage({
                 <button
                   type="button"
                   disabled
-                  className="cursor-not-allowed rounded bg-border px-5 py-3 text-sm font-semibold text-white/80"
+                  className="cursor-not-allowed rounded-md bg-border px-5 py-3 text-sm font-semibold text-white/80"
                 >
                   Archivo pendiente de carga
                 </button>
@@ -138,9 +147,15 @@ export default async function ResourceDetailPage({
               <form action={boundToggle}>
                 <button
                   type="submit"
-                  className="rounded border border-border bg-white px-5 py-3 text-sm text-navy hover:border-slate"
+                  className={
+                    "flex items-center gap-2 rounded-md border px-5 py-3 text-sm transition-colors duration-[var(--transition-hover)] " +
+                    (completed
+                      ? "border-accent bg-accent text-white hover:bg-navy"
+                      : "border-border bg-white text-navy hover:border-slate")
+                  }
                 >
-                  {completed ? "Completado ✓" : "Marcar como completado"}
+                  {completed && <CircleCheck className="h-4 w-4" />}
+                  {completed ? "Completado" : "Marcar como completado"}
                 </button>
               </form>
             </div>
@@ -153,16 +168,14 @@ export default async function ResourceDetailPage({
           </div>
           <div className="flex flex-col gap-3">
             {related.map((r) => (
-              <Link
+              <ResourceCard
                 key={r.id}
-                href={`/recursos/${r.id}`}
-                className="rounded border border-border bg-white p-3.5 hover:border-slate"
-              >
-                <div className="mb-1.5 font-mono text-[10px] text-slate">
-                  {tipoByKey[r.tipo]?.label ?? r.tipo} · {r.nivel}
-                </div>
-                <div className="text-sm font-bold leading-[1.3]">{r.titulo}</div>
-              </Link>
+                resource={r}
+                tipoLabel={tipoByKey[r.tipo]?.label ?? r.tipo}
+                kind={tipoByKey[r.tipo]?.kind}
+                completed={completedIds.has(r.id)}
+                variant="compact"
+              />
             ))}
           </div>
         </div>

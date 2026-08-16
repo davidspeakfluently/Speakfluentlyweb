@@ -58,7 +58,7 @@ export default async function LoginPage({
                   autoComplete="username"
                   placeholder="tu.nombre@correo.com"
                   required
-                  className="rounded border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none focus:border-accent"
+                  className="rounded-md border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none transition-shadow duration-[var(--transition-hover)] focus:border-accent focus:shadow-[var(--shadow-card)]"
                 />
               </div>
 
@@ -76,7 +76,7 @@ export default async function LoginPage({
                   autoComplete="current-password"
                   placeholder="••••••••"
                   required
-                  className="rounded border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none focus:border-accent"
+                  className="rounded-md border border-border bg-white px-3.5 py-[13px] text-[15px] text-navy outline-none transition-shadow duration-[var(--transition-hover)] focus:border-accent focus:shadow-[var(--shadow-card)]"
                 />
               </div>
 
@@ -88,7 +88,7 @@ export default async function LoginPage({
 
               <button
                 type="submit"
-                className="mt-2 rounded bg-accent p-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-navy"
+                className="mt-2 rounded-md bg-accent p-3.5 text-[15px] font-semibold text-white transition-colors duration-[var(--transition-hover)] hover:bg-navy"
               >
                 Entrar a mis recursos
               </button>

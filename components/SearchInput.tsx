@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Search } from "lucide-react";
 
 export function SearchInput({ defaultValue }: { defaultValue: string }) {
   const router = useRouter();
@@ -25,12 +26,15 @@ export function SearchInput({ defaultValue }: { defaultValue: string }) {
   }
 
   return (
-    <input
-      type="text"
-      value={value}
-      onChange={handleChange}
-      placeholder="Buscar por título…"
-      className="max-w-[420px] flex-1 rounded border border-accent bg-navy-2 px-4 py-[11px] text-sm text-white outline-none focus:border-slate"
-    />
+    <div className="relative max-w-[420px] flex-1">
+      <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate" />
+      <input
+        type="text"
+        value={value}
+        onChange={handleChange}
+        placeholder="Buscar por título…"
+        className="w-full rounded-md border border-accent bg-navy-2 py-[11px] pr-4 pl-10 text-sm text-white outline-none transition-shadow duration-[var(--transition-hover)] focus:border-slate focus:shadow-[var(--shadow-card)]"
+      />
+    </div>
   );
 }
