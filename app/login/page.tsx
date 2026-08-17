@@ -14,6 +14,7 @@ export default async function LoginPage({
         <div className="relative flex flex-col justify-between gap-10 overflow-hidden bg-navy p-6 py-10 sm:p-10 md:gap-0 md:p-16">
           <div className="absolute -right-[60px] -top-[60px] h-[280px] w-[280px] rounded-full bg-accent opacity-60" />
           <div className="absolute -bottom-[100px] -left-10 h-[220px] w-[220px] rounded-full border-2 border-slate opacity-40" />
+          <div className="absolute bottom-[120px] left-[40%] h-[260px] w-[260px] rounded-full bg-[radial-gradient(circle,var(--color-amber)_0%,transparent_70%)] opacity-20 blur-2xl" />
 
           <div className="relative z-10">
             <div className="font-mono text-[13px] uppercase tracking-[0.12em] text-border">
@@ -88,7 +89,7 @@ export default async function LoginPage({
 
               <button
                 type="submit"
-                className="mt-2 rounded-md bg-accent p-3.5 text-[15px] font-semibold text-white transition-colors duration-[var(--transition-hover)] hover:bg-navy"
+                className="mt-2 rounded-md bg-amber p-3.5 text-[15px] font-semibold text-navy transition-[background-color,box-shadow] duration-[var(--transition-standard)] ease-[var(--ease-standard)] hover:bg-amber-strong hover:text-white hover:shadow-[var(--glow-amber)]"
               >
                 Entrar a mis recursos
               </button>

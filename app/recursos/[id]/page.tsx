@@ -120,7 +120,7 @@ export default async function ResourceDetailPage({
                   href={resource.video_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors duration-[var(--transition-hover)] hover:bg-navy"
+                  className="rounded-md bg-amber px-5 py-3 text-sm font-semibold text-navy transition-[background-color,box-shadow] duration-[var(--transition-standard)] ease-[var(--ease-standard)] hover:bg-amber-strong hover:text-white hover:shadow-[var(--glow-amber)]"
                 >
                   {actionLabel}
                 </a>
@@ -130,7 +130,7 @@ export default async function ResourceDetailPage({
                   target="_blank"
                   rel="noopener noreferrer"
                   download={kind === "documento"}
-                  className="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors duration-[var(--transition-hover)] hover:bg-navy"
+                  className="rounded-md bg-amber px-5 py-3 text-sm font-semibold text-navy transition-[background-color,box-shadow] duration-[var(--transition-standard)] ease-[var(--ease-standard)] hover:bg-amber-strong hover:text-white hover:shadow-[var(--glow-amber)]"
                 >
                   {actionLabel}
                 </a>

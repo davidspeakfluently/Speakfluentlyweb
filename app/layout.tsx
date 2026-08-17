@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Manrope, IBM_Plex_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+const switzer = localFont({
+  src: [
+    { path: "./fonts/Switzer-Variable.woff2", weight: "100 900", style: "normal" },
+    { path: "./fonts/Switzer-VariableItalic.woff2", weight: "100 900", style: "italic" },
+  ],
+  variable: "--font-switzer",
+  display: "swap",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
@@ -21,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${manrope.variable} ${ibmPlexMono.variable}`}>
+    <html lang="es" className={`${switzer.variable} ${ibmPlexMono.variable}`}>
       <body className="min-h-screen bg-bg text-navy antialiased">
         {children}
       </body>

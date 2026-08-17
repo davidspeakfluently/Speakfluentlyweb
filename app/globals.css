@@ -23,10 +23,20 @@
   --color-nivel-intermedio-text: var(--color-accent);
   --color-nivel-avanzado-bg: var(--color-accent);
   --color-nivel-avanzado-text: white;
+
+  --color-amber: #e8a33d;
+  --color-amber-strong: #7a4a00;
+  --color-amber-soft: #f6d9a8;
+  --color-success: #2f7a4d;
+  --color-danger: #a3352f;
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-standard: 200ms;
+  --glow-amber: 0 0 40px 4px rgba(232, 163, 61, 0.35);
 }
 
 @theme inline {
-  --font-sans: var(--font-manrope);
+  --font-sans: var(--font-switzer);
   --font-mono: var(--font-ibm-plex-mono);
 }
 
@@ -43,4 +53,13 @@ input::placeholder {
 
 ::selection {
   background: var(--color-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
