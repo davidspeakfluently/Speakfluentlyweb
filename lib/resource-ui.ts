@@ -1,4 +1,4 @@
-import { FileText, Headphones, Music, Play, Video } from "lucide-react";
+import { FileText, Headphones, Music, Play, Puzzle, Video } from "lucide-react";
 import type { Kind, Nivel } from "@/lib/types";
 
 export function previewClassFor(kind: Kind) {
@@ -28,6 +28,7 @@ export function previewIconFor(kind: Kind) {
 export function kindIconFor(kind: Kind) {
   if (kind === "video") return Video;
   if (kind === "audio") return Headphones;
+  if (kind === "juego") return Puzzle;
   return FileText;
 }
 

@@ -12,6 +12,7 @@ export default async function AdminRecursosPage() {
     supabase.from("resources").select("*").order("created_at", { ascending: false }),
     getTiposRecurso(supabase),
   ]);
+  const tipoByKey = Object.fromEntries(tipos.map((t) => [t.key, t]));
   const tipoLabelByKey = Object.fromEntries(tipos.map((t) => [t.key, t.label]));
 
   return (
@@ -76,6 +77,14 @@ export default async function AdminRecursosPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex justify-end gap-4">
+                      {tipoByKey[r.tipo]?.kind === "juego" && (
+                        <Link
+                          href={`/admin/recursos/${r.id}/palabras`}
+                          className="text-accent hover:underline"
+                        >
+                          Palabras
+                        </Link>
+                      )}
                       <Link
                         href={`/admin/recursos/${r.id}/editar`}
                         className="text-accent hover:underline"

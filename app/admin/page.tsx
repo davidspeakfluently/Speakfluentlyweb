@@ -7,7 +7,7 @@ export default async function AdminPage() {
   const { profile } = await requireStaff();
   const supabase = await createServerSupabase();
 
-  const [{ count: studentCount }, { count: resourceCount }, { count: teacherCount }] =
+  const [{ count: studentCount }, { count: resourceCount }, { count: teacherCount }, { count: attemptCount }] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -15,6 +15,7 @@ export default async function AdminPage() {
         .eq("role", "estudiante"),
       supabase.from("resources").select("*", { count: "exact", head: true }),
       supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "profesor"),
+      supabase.from("game_attempts").select("*", { count: "exact", head: true }),
     ]);
 
   return (
@@ -67,6 +68,19 @@ export default async function AdminPage() {
             </div>
             <div className="mt-2 text-sm text-accent">
               Editar los temas y tipos de recurso disponibles.
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/progreso"
+            className="rounded border border-border bg-white p-6 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,4,60,0.12)]"
+          >
+            <div className="font-mono text-xs uppercase tracking-[0.06em] text-slate">
+              Progreso
+            </div>
+            <div className="mt-2 text-2xl font-bold">{attemptCount ?? 0}</div>
+            <div className="mt-2 text-sm text-accent">
+              Ver puntajes de los estudiantes en los juegos.
             </div>
           </Link>
 

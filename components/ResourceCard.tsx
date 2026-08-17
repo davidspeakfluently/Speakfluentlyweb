@@ -21,7 +21,7 @@ export function ResourceCard({
 
   return (
     <Link
-      href={`/recursos/${resource.id}`}
+      href={kind === "juego" ? `/juegos/${resource.id}` : `/recursos/${resource.id}`}
       className={
         "group relative flex flex-col gap-3 rounded-md border border-border bg-white transition-[transform,box-shadow,border-color] duration-[var(--transition-hover)] hover:-translate-y-0.5 hover:border-slate hover:shadow-[var(--shadow-card)] " +
         (compact ? "p-3.5" : "p-5")

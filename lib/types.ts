@@ -5,12 +5,13 @@ export type Nivel = "Básico" | "Intermedio" | "Avanzado";
 export const NIVELES: Nivel[] = ["Básico", "Intermedio", "Avanzado"];
 
 /** Comportamiento de reproducción/descarga — determina qué player se usa. */
-export type Kind = "documento" | "audio" | "video";
+export type Kind = "documento" | "audio" | "video" | "juego";
 
 export const ACTION_LABEL_BY_KIND: Record<Kind, string> = {
   documento: "Descargar PDF",
   audio: "Reproducir audio",
   video: "Ver video completo",
+  juego: "Jugar",
 };
 
 export type Profile = {
@@ -57,6 +58,24 @@ export type Progress = {
   completed_at: string;
 };
 
+export type GameWord = {
+  id: string;
+  resource_id: string;
+  en: string;
+  es: string;
+  orden: number;
+  created_at: string;
+};
+
+export type GameAttempt = {
+  id: string;
+  user_id: string;
+  resource_id: string;
+  score: number;
+  total: number;
+  completed_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -96,6 +115,23 @@ export type Database = {
         Row: Progress;
         Insert: Partial<Progress> & { user_id: string; resource_id: string };
         Update: Partial<Progress>;
+        Relationships: [];
+      };
+      game_words: {
+        Row: GameWord;
+        Insert: Partial<GameWord> & { resource_id: string; en: string; es: string };
+        Update: Partial<GameWord>;
+        Relationships: [];
+      };
+      game_attempts: {
+        Row: GameAttempt;
+        Insert: Partial<GameAttempt> & {
+          user_id: string;
+          resource_id: string;
+          score: number;
+          total: number;
+        };
+        Update: Partial<GameAttempt>;
         Relationships: [];
       };
     };
