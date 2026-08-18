@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { ExerciseRunnerResult, SequencingData } from "@/lib/exercise-content";
-import { ResultSummary, VerifyButton } from "@/components/exercises/ExerciseShell";
+import { ResultSummary, VerifyRow } from "@/components/exercises/ExerciseShell";
 
 export function SequencingRunner({
   data,
@@ -13,7 +13,9 @@ export function SequencingRunner({
   onResult: (result: ExerciseRunnerResult) => void;
 }) {
   const [order, setOrder] = useState(() => data.items_shuffled.map((i) => i.id));
-  const [checked, setChecked] = useState(false);
+  const [attempted, setAttempted] = useState(false);
+  const [resolved, setResolved] = useState(false);
+  const [revealed, setRevealed] = useState(false);
 
   const textById = Object.fromEntries(data.items_shuffled.map((i) => [i.id, i.text]));
 
@@ -28,12 +30,22 @@ export function SequencingRunner({
   }
 
   function verify() {
-    setChecked(true);
+    setAttempted(true);
     const correct = order.every((id, i) => id === data.correct_order[i]);
-    onResult({ points: correct ? 1 : 0, of: 1 });
+    if (correct) {
+      setResolved(true);
+      setRevealed(true);
+      onResult({ points: 1, of: 1 });
+    }
   }
 
-  const isCorrect = checked && order.every((id, i) => id === data.correct_order[i]);
+  function reveal() {
+    setOrder(data.correct_order);
+    setRevealed(true);
+    onResult({ points: 0, of: 1 });
+  }
+
+  const showWrongHint = attempted && !resolved && !revealed;
 
   return (
     <div>
@@ -43,16 +55,16 @@ export function SequencingRunner({
             key={id}
             className={
               "flex items-center gap-2 rounded-md border px-3.5 py-2.5 text-sm " +
-              (checked
-                ? isCorrect
-                  ? "border-success bg-success/10 text-success"
-                  : "border-danger bg-danger/10 text-danger"
-                : "border-border bg-white text-navy")
+              (resolved
+                ? "border-success bg-success/10 text-success"
+                : revealed
+                  ? "border-border bg-white text-navy"
+                  : "border-border bg-white text-navy")
             }
           >
             <span className="font-mono text-xs text-slate">{i + 1}.</span>
             <span className="flex-1">{textById[id]}</span>
-            {!checked && (
+            {!revealed && (
               <div className="flex shrink-0 gap-1">
                 <button
                   type="button"
@@ -78,8 +90,17 @@ export function SequencingRunner({
         ))}
       </div>
 
-      <VerifyButton onClick={verify} verified={checked} />
-      {checked && <ResultSummary points={isCorrect ? 1 : 0} of={1} />}
+      {showWrongHint && (
+        <div className="mt-2 text-xs text-danger">Todavía no está en el orden correcto — sigue intentando.</div>
+      )}
+
+      <VerifyRow
+        onVerify={verify}
+        onReveal={reveal}
+        showReveal={showWrongHint}
+        revealed={revealed}
+      />
+      {revealed && <ResultSummary points={resolved ? 1 : 0} of={1} />}
     </div>
   );
 }

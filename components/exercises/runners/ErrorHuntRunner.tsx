@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check, X } from "lucide-react";
 import type { ErrorHuntData, ExerciseRunnerResult } from "@/lib/exercise-content";
 import { compareAnswers } from "@/lib/exercise-grading";
-import { ResultSummary, VerifyButton } from "@/components/exercises/ExerciseShell";
+import { ResultSummary, VerifyRow } from "@/components/exercises/ExerciseShell";
 
 type Segment = { text: string; errorIndex: number | null };
 
@@ -30,18 +30,28 @@ export function ErrorHuntRunner({
   onResult: (result: ExerciseRunnerResult) => void;
 }) {
   const [corrections, setCorrections] = useState(() => data.errors.map(() => ""));
-  const [checked, setChecked] = useState<boolean[] | null>(null);
+  const [resolved, setResolved] = useState(() => data.errors.map(() => false));
+  const [attempted, setAttempted] = useState(false);
+  const [revealed, setRevealed] = useState(false);
 
   const segments = highlight(data.text, data.errors);
+  const allResolved = resolved.every(Boolean);
+  const canVerify = !allResolved && resolved.every((r, i) => r || corrections[i].trim() !== "");
 
-  function verify() {
-    const results = data.errors.map((e, i) => compareAnswers(corrections[i], e.correct));
-    setChecked(results);
-    const correctCount = results.filter(Boolean).length;
+  function finalize(finalResolved: boolean[]) {
+    setRevealed(true);
+    const correctCount = finalResolved.filter(Boolean).length;
     onResult({
       points: correctCount * data.scoring.points_per_correct_find,
       of: data.scoring.total_points,
     });
+  }
+
+  function verify() {
+    setAttempted(true);
+    const next = resolved.map((r, i) => r || compareAnswers(corrections[i], data.errors[i].correct));
+    setResolved(next);
+    if (next.every(Boolean)) finalize(next);
   }
 
   return (
@@ -60,33 +70,40 @@ export function ErrorHuntRunner({
       </p>
 
       <div className="flex flex-col gap-2.5">
-        {data.errors.map((e, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <span className="w-5 shrink-0 font-mono text-xs text-slate">{i + 1}.</span>
-            <input
-              type="text"
-              value={corrections[i]}
-              disabled={!!checked}
-              onChange={(ev) =>
-                setCorrections((prev) => prev.map((v, idx) => (idx === i ? ev.target.value : v)))
-              }
-              placeholder="Escribe la corrección"
-              className="flex-1 rounded border border-border bg-white px-3 py-2 text-sm text-navy outline-none focus:border-accent disabled:bg-bg"
-            />
-            {checked &&
-              (checked[i] ? (
-                <Check className="h-4 w-4 shrink-0 text-success" />
-              ) : (
-                <X className="h-4 w-4 shrink-0 text-danger" />
-              ))}
-          </div>
-        ))}
+        {data.errors.map((e, i) => {
+          const isResolved = resolved[i];
+          const isWrong = attempted && !isResolved;
+          return (
+            <div key={i} className="flex items-center gap-2.5">
+              <span className="w-5 shrink-0 font-mono text-xs text-slate">{i + 1}.</span>
+              <input
+                type="text"
+                value={corrections[i]}
+                disabled={isResolved || revealed}
+                onChange={(ev) =>
+                  setCorrections((prev) => prev.map((v, idx) => (idx === i ? ev.target.value : v)))
+                }
+                placeholder="Escribe la corrección"
+                className={
+                  "flex-1 rounded border px-3 py-2 text-sm text-navy outline-none disabled:bg-bg " +
+                  (isResolved
+                    ? "border-success bg-success/10"
+                    : isWrong
+                      ? "border-danger focus:border-danger"
+                      : "border-border bg-white focus:border-accent")
+                }
+              />
+              {isResolved && <Check className="h-4 w-4 shrink-0 text-success" />}
+              {isWrong && <X className="h-4 w-4 shrink-0 text-danger" />}
+            </div>
+          );
+        })}
       </div>
 
-      {checked && (
+      {revealed && (
         <div className="mt-3 flex flex-col gap-1">
           {data.errors.map((e, i) =>
-            checked[i] ? null : (
+            resolved[i] ? null : (
               <p key={i} className="text-xs text-slate">
                 <span className="font-semibold text-danger">{i + 1}.</span> {e.correct} — {e.explanation}
               </p>
@@ -95,14 +112,16 @@ export function ErrorHuntRunner({
         </div>
       )}
 
-      <VerifyButton
-        onClick={verify}
-        verified={!!checked}
-        disabled={corrections.some((c) => c.trim() === "")}
+      <VerifyRow
+        onVerify={verify}
+        onReveal={() => finalize(resolved)}
+        verifyDisabled={!canVerify}
+        showReveal={attempted && !allResolved}
+        revealed={revealed}
       />
-      {checked && (
+      {revealed && (
         <ResultSummary
-          points={checked.filter(Boolean).length * data.scoring.points_per_correct_find}
+          points={resolved.filter(Boolean).length * data.scoring.points_per_correct_find}
           of={data.scoring.total_points}
         />
       )}

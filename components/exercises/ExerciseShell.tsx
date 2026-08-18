@@ -22,25 +22,48 @@ export function ExerciseShell({
   );
 }
 
-export function VerifyButton({
-  onClick,
-  disabled,
-  verified,
+/**
+ * Fila de acciones compartida por los runners auto-calificables. "Verificar"
+ * queda disponible mientras queden campos sin resolver, para que el
+ * estudiante pueda corregirse solo — esto es práctica, no examen. "Ver
+ * respuesta" solo aparece tras un primer intento fallido, y es lo único que
+ * revela la respuesta correcta/explicación (antes de eso, un campo
+ * incorrecto solo se marca en rojo, sin decir cuál es la respuesta).
+ */
+export function VerifyRow({
+  onVerify,
+  onReveal,
+  verifyDisabled,
+  showReveal,
+  revealed,
 }: {
-  onClick: () => void;
-  disabled?: boolean;
-  verified: boolean;
+  onVerify: () => void;
+  onReveal: () => void;
+  verifyDisabled?: boolean;
+  showReveal: boolean;
+  revealed: boolean;
 }) {
-  if (verified) return null;
+  if (revealed) return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="mt-4 rounded-md border border-border bg-white px-5 py-2.5 text-sm text-navy transition-colors duration-[var(--transition-hover)] hover:border-slate disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      Verificar
-    </button>
+    <div className="mt-4 flex items-center gap-4">
+      <button
+        type="button"
+        onClick={onVerify}
+        disabled={verifyDisabled}
+        className="rounded-md border border-border bg-white px-5 py-2.5 text-sm text-navy transition-colors duration-[var(--transition-hover)] hover:border-slate disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Verificar
+      </button>
+      {showReveal && (
+        <button
+          type="button"
+          onClick={onReveal}
+          className="text-xs text-slate underline decoration-dotted hover:text-accent"
+        >
+          Ver la respuesta
+        </button>
+      )}
+    </div>
   );
 }
 
