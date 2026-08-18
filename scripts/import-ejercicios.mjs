@@ -73,18 +73,29 @@ function normalize(s) {
 }
 
 /** Fuzzy-match del topic del cuadernillo contra el título de un recurso existente
- * (las cartillas siguen el patrón "<Topic> - Estructura, usos y contexto real"). */
-function findRelatedResourceId(topic, candidates) {
+ * (las cartillas siguen el patrón "<Topic> - Estructura, usos y contexto real").
+ * Usa solapamiento de tokens en vez de exigir que todos los tokens del topic
+ * estén en el título — el topic a veces trae una palabra extra (ej. "Future:
+ * Going to vs Will" vs. la cartilla "Going to vs. Will") que con un match
+ * estricto haría fallar una coincidencia real. */
+function findRelatedCartilla(topic, candidates) {
   const topicNorm = normalize(topic);
   const exact = candidates.find((c) => normalize(c.titulo.split(" - ")[0]) === topicNorm);
-  if (exact) return exact.id;
+  if (exact) return exact;
 
   const topicTokens = new Set(topicNorm.split(" ").filter(Boolean));
-  const tokenMatch = candidates.find((c) => {
+  let best = null;
+  let bestRatio = 0;
+  for (const c of candidates) {
     const titleTokens = new Set(normalize(c.titulo).split(" ").filter(Boolean));
-    return [...topicTokens].every((t) => titleTokens.has(t));
-  });
-  return tokenMatch ? tokenMatch.id : null;
+    const overlap = [...topicTokens].filter((t) => titleTokens.has(t)).length;
+    const ratio = overlap / Math.min(topicTokens.size, titleTokens.size);
+    if (ratio > bestRatio) {
+      bestRatio = ratio;
+      best = c;
+    }
+  }
+  return bestRatio >= 0.6 ? best : null;
 }
 
 async function importFile(supabase, filePath, relatedCandidates) {
@@ -114,12 +125,18 @@ async function importFile(supabase, filePath, relatedCandidates) {
     }
   }
 
-  const nivel = NIVEL_BY_LEVEL[frontmatter.level];
-  if (!nivel) throw new Error(`${filename}: nivel "${frontmatter.level}" sin mapeo a Nivel de la app`);
+  const defaultNivel = NIVEL_BY_LEVEL[frontmatter.level];
+  if (!defaultNivel) throw new Error(`${filename}: nivel "${frontmatter.level}" sin mapeo a Nivel de la app`);
 
-  const relatedResourceId = frontmatter.related_cartilla
-    ? findRelatedResourceId(frontmatter.topic, relatedCandidates)
+  const relatedCartilla = frontmatter.related_cartilla
+    ? findRelatedCartilla(frontmatter.topic, relatedCandidates)
     : null;
+  // El nivel CEFR no mapea 1:1 a Básico/Intermedio/Avanzado (confirmado con
+  // datos reales: varios temas A2 ya están clasificados "Intermedio" en sus
+  // cartillas). Cuando hay una cartilla relacionada con match confiable, se
+  // hereda su nivel — es la fuente más confiable de la dificultad real del
+  // tema en este currículo — y solo se usa el mapeo CEFR como respaldo.
+  const nivel = relatedCartilla?.nivel ?? defaultNivel;
 
   const resourceFields = {
     titulo: frontmatter.title,
@@ -129,7 +146,7 @@ async function importFile(supabase, filePath, relatedCandidates) {
     nivel,
     autor: AUTOR,
     meta: `${frontmatter.exercise_count} ejercicios`,
-    related_resource_id: relatedResourceId,
+    related_resource_id: relatedCartilla?.id ?? null,
   };
 
   const { data: existing } = await supabase
@@ -168,8 +185,8 @@ async function importFile(supabase, filePath, relatedCandidates) {
   if (itemsError) throw new Error(`${filename}: error insertando exercise_items — ${itemsError.message}`);
 
   console.log(
-    `  ✓ ${filename} → resource ${resourceId} (${items.length} ejercicios${
-      relatedResourceId ? ", cartilla relacionada encontrada" : ", sin cartilla relacionada"
+    `  ✓ ${filename} → resource ${resourceId} (${items.length} ejercicios, nivel: ${nivel}${
+      relatedCartilla ? `, cartilla relacionada: "${relatedCartilla.titulo}"` : ", sin cartilla relacionada"
     })`,
   );
 }
@@ -198,7 +215,7 @@ async function main() {
 
   const { data: relatedCandidates } = await supabase
     .from("resources")
-    .select("id, titulo")
+    .select("id, titulo, nivel")
     .eq("tipo", "cartilla");
 
   console.log(`Cargando ${files.length} archivo(s) desde ${dir}\n`);

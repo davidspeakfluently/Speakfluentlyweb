@@ -117,7 +117,8 @@ create table if not exists public.exercise_items (
   orden int not null default 0,
   type text not null check (type in (
     'error_hunt', 'multiple_choice', 'odd_one_out', 'sequencing',
-    'transformation_chain', 'rewrite_improve', 'dialogue_completion', 'free_writing'
+    'transformation_chain', 'rewrite_improve', 'dialogue_completion',
+    'free_writing', 'opinion_response'
   )),
   title text not null,
   data jsonb not null,

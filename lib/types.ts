@@ -86,7 +86,8 @@ export type ExerciseType =
   | "transformation_chain"
   | "rewrite_improve"
   | "dialogue_completion"
-  | "free_writing";
+  | "free_writing"
+  | "opinion_response";
 
 /** Los 5 tipos con calificación 100% determinística, construidos en esta fase. */
 export const AUTO_GRADABLE_EXERCISE_TYPES: ExerciseType[] = [
