@@ -3,6 +3,11 @@ import { CircleCheck } from "lucide-react";
 import type { Kind, Resource } from "@/lib/types";
 import { kindIconFor, nivelBadgeClassFor } from "@/lib/resource-ui";
 
+const KIND_ROUTE: Partial<Record<Kind, (id: string) => string>> = {
+  juego: (id) => `/juegos/${id}`,
+  ejercicio: (id) => `/ejercicios/${id}`,
+};
+
 export function ResourceCard({
   resource,
   tipoLabel,
@@ -21,7 +26,7 @@ export function ResourceCard({
 
   return (
     <Link
-      href={kind === "juego" ? `/juegos/${resource.id}` : `/recursos/${resource.id}`}
+      href={(KIND_ROUTE[kind] ?? ((id: string) => `/recursos/${id}`))(resource.id)}
       className={
         "group relative flex flex-col gap-3 rounded-md border border-border bg-white transition-[transform,box-shadow,border-color] duration-[var(--transition-hover)] hover:-translate-y-0.5 hover:border-slate hover:shadow-[var(--shadow-card)] " +
         (compact ? "p-3.5" : "p-5")

@@ -25,7 +25,7 @@ create table if not exists public.temas (
 create table if not exists public.tipos_recurso (
   key text primary key,
   label text not null,
-  kind text not null check (kind in ('documento', 'audio', 'video')),
+  kind text not null check (kind in ('documento', 'audio', 'video', 'juego', 'ejercicio')),
   orden int not null default 0,
   created_at timestamptz not null default now()
 );
@@ -43,9 +43,11 @@ insert into public.tipos_recurso (key, label, kind, orden) values
   ('cartilla', 'CARTILLA', 'documento', 0),
   ('guia', 'GUÍA', 'documento', 1),
   ('vocab', 'VOCABULARIO', 'documento', 2),
-  ('ejercicio', 'EJERCICIO', 'documento', 3),
+  ('ejercicio', 'EJERCICIO', 'ejercicio', 3),
   ('video', 'VIDEO', 'video', 4),
-  ('audio', 'NOTA DE VOZ', 'audio', 5)
+  ('audio', 'NOTA DE VOZ', 'audio', 5),
+  ('sopa_letras', 'SOPA DE LETRAS', 'juego', 6),
+  ('ahorcado', 'AHORCADO', 'juego', 7)
 on conflict (key) do nothing;
 
 create table if not exists public.resources (
@@ -59,6 +61,7 @@ create table if not exists public.resources (
   meta text not null,
   storage_path text,
   video_url text,
+  related_resource_id uuid references public.resources (id) on delete set null,
   created_by uuid references public.profiles (id) on delete set null,
   created_at timestamptz not null default now()
 );
@@ -73,6 +76,70 @@ create table if not exists public.progress (
 create index if not exists resources_tema_idx on public.resources (tema);
 create index if not exists resources_nivel_idx on public.resources (nivel);
 create index if not exists resources_tipo_idx on public.resources (tipo);
+
+-- ============================================================
+-- Juegos de vocabulario (sopa de letras, ahorcado)
+-- ============================================================
+
+create table if not exists public.game_words (
+  id uuid primary key default gen_random_uuid(),
+  resource_id uuid not null references public.resources (id) on delete cascade,
+  en text not null,
+  es text not null,
+  orden int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.game_attempts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  resource_id uuid not null references public.resources (id) on delete cascade,
+  score int not null,
+  total int not null,
+  completed_at timestamptz not null default now()
+);
+-- Sin PK compuesta a propósito: cada intento es una fila nueva (historial de
+-- juego, no un checkbox de "completado" como progress).
+
+create index if not exists game_words_resource_idx on public.game_words (resource_id);
+create index if not exists game_attempts_resource_idx on public.game_attempts (resource_id);
+create index if not exists game_attempts_user_idx on public.game_attempts (user_id);
+
+-- ============================================================
+-- Ejercicios interactivos (cuadernillos con retroalimentación
+-- correcto/incorrecto)
+-- ============================================================
+
+create table if not exists public.exercise_items (
+  id uuid primary key default gen_random_uuid(),
+  resource_id uuid not null references public.resources (id) on delete cascade,
+  source_exercise_id text not null,
+  orden int not null default 0,
+  type text not null check (type in (
+    'error_hunt', 'multiple_choice', 'odd_one_out', 'sequencing',
+    'transformation_chain', 'rewrite_improve', 'dialogue_completion', 'free_writing'
+  )),
+  title text not null,
+  data jsonb not null,
+  created_at timestamptz not null default now(),
+  unique (resource_id, source_exercise_id)
+);
+
+create table if not exists public.exercise_attempts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  resource_id uuid not null references public.resources (id) on delete cascade,
+  score int not null,
+  total int not null,
+  details jsonb not null default '[]'::jsonb,
+  completed_at timestamptz not null default now()
+);
+-- Igual que game_attempts: sin PK compuesta, cada intento es una fila nueva
+-- (los cuadernillos son reintentables).
+
+create index if not exists exercise_items_resource_idx on public.exercise_items (resource_id);
+create index if not exists exercise_attempts_resource_idx on public.exercise_attempts (resource_id);
+create index if not exists exercise_attempts_user_idx on public.exercise_attempts (user_id);
 
 -- ============================================================
 -- Alta automática de perfil cuando se crea un auth.users
@@ -144,6 +211,10 @@ alter table public.resources enable row level security;
 alter table public.progress enable row level security;
 alter table public.temas enable row level security;
 alter table public.tipos_recurso enable row level security;
+alter table public.game_words enable row level security;
+alter table public.game_attempts enable row level security;
+alter table public.exercise_items enable row level security;
+alter table public.exercise_attempts enable row level security;
 
 -- profiles: cada quien lee su propia fila; staff (admin/profesor) lee todas.
 drop policy if exists profiles_select on public.profiles;
@@ -192,12 +263,58 @@ create policy tipos_recurso_write_staff on public.tipos_recurso
   using (public.is_staff())
   with check (public.is_staff());
 
--- progress: cada estudiante solo ve/edita su propio progreso.
+-- progress: cada estudiante lee/escribe su propio progreso; staff puede
+-- leer el de cualquier estudiante (para /admin/progreso), pero solo
+-- escribir el propio.
 drop policy if exists progress_own on public.progress;
 create policy progress_own on public.progress
   for all to authenticated
-  using (user_id = auth.uid())
+  using (user_id = auth.uid() or public.is_staff())
   with check (user_id = auth.uid());
+
+-- game_words: cualquier autenticado lee, solo staff escribe.
+drop policy if exists game_words_select on public.game_words;
+create policy game_words_select on public.game_words
+  for select to authenticated using (true);
+
+drop policy if exists game_words_write_staff on public.game_words;
+create policy game_words_write_staff on public.game_words
+  for all to authenticated
+  using (public.is_staff())
+  with check (public.is_staff());
+
+-- game_attempts: cada estudiante inserta/lee lo propio; staff lee todo.
+drop policy if exists game_attempts_insert_own on public.game_attempts;
+create policy game_attempts_insert_own on public.game_attempts
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists game_attempts_select on public.game_attempts;
+create policy game_attempts_select on public.game_attempts
+  for select to authenticated
+  using (user_id = auth.uid() or public.is_staff());
+
+-- exercise_items: cualquier autenticado lee, solo staff escribe.
+drop policy if exists exercise_items_select on public.exercise_items;
+create policy exercise_items_select on public.exercise_items
+  for select to authenticated using (true);
+
+drop policy if exists exercise_items_write_staff on public.exercise_items;
+create policy exercise_items_write_staff on public.exercise_items
+  for all to authenticated
+  using (public.is_staff())
+  with check (public.is_staff());
+
+-- exercise_attempts: cada estudiante inserta/lee lo propio; staff lee todo.
+drop policy if exists exercise_attempts_insert_own on public.exercise_attempts;
+create policy exercise_attempts_insert_own on public.exercise_attempts
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists exercise_attempts_select on public.exercise_attempts;
+create policy exercise_attempts_select on public.exercise_attempts
+  for select to authenticated
+  using (user_id = auth.uid() or public.is_staff());
 
 -- ============================================================
 -- Storage: bucket privado para archivos de recursos.

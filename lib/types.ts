@@ -5,13 +5,14 @@ export type Nivel = "Básico" | "Intermedio" | "Avanzado";
 export const NIVELES: Nivel[] = ["Básico", "Intermedio", "Avanzado"];
 
 /** Comportamiento de reproducción/descarga — determina qué player se usa. */
-export type Kind = "documento" | "audio" | "video" | "juego";
+export type Kind = "documento" | "audio" | "video" | "juego" | "ejercicio";
 
 export const ACTION_LABEL_BY_KIND: Record<Kind, string> = {
   documento: "Descargar PDF",
   audio: "Reproducir audio",
   video: "Ver video completo",
   juego: "Jugar",
+  ejercicio: "Practicar ejercicio",
 };
 
 export type Profile = {
@@ -48,6 +49,7 @@ export type Resource = {
   meta: string;
   storage_path: string | null;
   video_url: string | null;
+  related_resource_id: string | null;
   created_by: string | null;
   created_at: string;
 };
@@ -73,6 +75,54 @@ export type GameAttempt = {
   resource_id: string;
   score: number;
   total: number;
+  completed_at: string;
+};
+
+export type ExerciseType =
+  | "error_hunt"
+  | "multiple_choice"
+  | "odd_one_out"
+  | "sequencing"
+  | "transformation_chain"
+  | "rewrite_improve"
+  | "dialogue_completion"
+  | "free_writing";
+
+/** Los 5 tipos con calificación 100% determinística, construidos en esta fase. */
+export const AUTO_GRADABLE_EXERCISE_TYPES: ExerciseType[] = [
+  "error_hunt",
+  "multiple_choice",
+  "odd_one_out",
+  "sequencing",
+  "transformation_chain",
+];
+
+export type ExerciseItem = {
+  id: string;
+  resource_id: string;
+  source_exercise_id: string;
+  orden: number;
+  type: ExerciseType;
+  title: string;
+  data: unknown;
+  created_at: string;
+};
+
+export type ExerciseResultDetail = {
+  exercise_item_id: string;
+  type: ExerciseType;
+  points: number;
+  of: number;
+  self_assessed: boolean;
+};
+
+export type ExerciseAttempt = {
+  id: string;
+  user_id: string;
+  resource_id: string;
+  score: number;
+  total: number;
+  details: ExerciseResultDetail[];
   completed_at: string;
 };
 
@@ -132,6 +182,29 @@ export type Database = {
           total: number;
         };
         Update: Partial<GameAttempt>;
+        Relationships: [];
+      };
+      exercise_items: {
+        Row: ExerciseItem;
+        Insert: Partial<ExerciseItem> & {
+          resource_id: string;
+          source_exercise_id: string;
+          type: ExerciseType;
+          title: string;
+          data: unknown;
+        };
+        Update: Partial<ExerciseItem>;
+        Relationships: [];
+      };
+      exercise_attempts: {
+        Row: ExerciseAttempt;
+        Insert: Partial<ExerciseAttempt> & {
+          user_id: string;
+          resource_id: string;
+          score: number;
+          total: number;
+        };
+        Update: Partial<ExerciseAttempt>;
         Relationships: [];
       };
     };

@@ -1,6 +1,16 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, GameAttempt, GameWord, Profile, Resource, Tema, TipoRecurso } from "@/lib/types";
+import type {
+  Database,
+  ExerciseAttempt,
+  ExerciseItem,
+  GameAttempt,
+  GameWord,
+  Profile,
+  Resource,
+  Tema,
+  TipoRecurso,
+} from "@/lib/types";
 
 type DB = SupabaseClient<Database>;
 
@@ -125,6 +135,45 @@ export async function getRecentGameAttempts(
 ): Promise<GameAttempt[]> {
   const { data } = await supabase
     .from("game_attempts")
+    .select("*")
+    .order("completed_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function getExerciseItems(supabase: DB, resourceId: string): Promise<ExerciseItem[]> {
+  const { data } = await supabase
+    .from("exercise_items")
+    .select("*")
+    .eq("resource_id", resourceId)
+    .order("orden");
+  return data ?? [];
+}
+
+/** Mejor puntaje del estudiante en este cuadernillo, si ya lo hizo. */
+export async function getBestExerciseAttempt(
+  supabase: DB,
+  userId: string,
+  resourceId: string,
+): Promise<ExerciseAttempt | null> {
+  const { data } = await supabase
+    .from("exercise_attempts")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("resource_id", resourceId)
+    .order("score", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data;
+}
+
+/** Intentos recientes de cualquier estudiante, para la vista de staff. */
+export async function getRecentExerciseAttempts(
+  supabase: DB,
+  limit = 100,
+): Promise<ExerciseAttempt[]> {
+  const { data } = await supabase
+    .from("exercise_attempts")
     .select("*")
     .order("completed_at", { ascending: false })
     .limit(limit);

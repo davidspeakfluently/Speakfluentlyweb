@@ -19,6 +19,7 @@ const KIND_LABELS: Record<Kind, string> = {
   audio: "Audio",
   video: "Video",
   juego: "Juego",
+  ejercicio: "Ejercicio",
 };
 
 export function TemasManager({ temas }: { temas: Tema[] }) {

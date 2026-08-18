@@ -1,16 +1,92 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/auth";
-import { getRecentGameAttempts } from "@/lib/queries";
+import { getRecentExerciseAttempts, getRecentGameAttempts } from "@/lib/queries";
 import { createServerSupabase } from "@/lib/supabase/server";
+import type { ExerciseAttempt, GameAttempt } from "@/lib/types";
 import { AppHeader } from "@/components/AppHeader";
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("es", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function AttemptsTable({
+  attempts,
+  nameById,
+  tituloById,
+  labelColumn,
+  emptyLabel,
+}: {
+  attempts: (GameAttempt | ExerciseAttempt)[];
+  nameById: Record<string, string>;
+  tituloById: Record<string, string>;
+  labelColumn: string;
+  emptyLabel: string;
+}) {
+  return (
+    <div className="overflow-x-auto rounded border border-border bg-white">
+      <table className="w-full min-w-[640px] text-left text-sm">
+        <thead>
+          <tr className="border-b border-border bg-bg/60">
+            <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
+              Estudiante
+            </th>
+            <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
+              {labelColumn}
+            </th>
+            <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
+              Puntaje
+            </th>
+            <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
+              Fecha
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {attempts.map((a) => (
+            <tr key={a.id} className="border-b border-border last:border-0">
+              <td className="px-5 py-4 font-semibold">{nameById[a.user_id] ?? "Estudiante"}</td>
+              <td className="px-5 py-4 text-accent">
+                {tituloById[a.resource_id] ?? "Recurso eliminado"}
+              </td>
+              <td className="px-5 py-4 text-accent">
+                {a.score}/{a.total}
+              </td>
+              <td className="px-5 py-4 text-slate">{formatDate(a.completed_at)}</td>
+            </tr>
+          ))}
+          {attempts.length === 0 && (
+            <tr>
+              <td colSpan={4} className="px-5 py-10 text-center text-slate">
+                {emptyLabel}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default async function ProgresoPage() {
   await requireStaff();
   const supabase = await createServerSupabase();
-  const attempts = await getRecentGameAttempts(supabase);
+  const [gameAttempts, exerciseAttempts] = await Promise.all([
+    getRecentGameAttempts(supabase),
+    getRecentExerciseAttempts(supabase),
+  ]);
 
-  const studentIds = [...new Set(attempts.map((a) => a.user_id))];
-  const resourceIds = [...new Set(attempts.map((a) => a.resource_id))];
+  const studentIds = [
+    ...new Set([...gameAttempts, ...exerciseAttempts].map((a) => a.user_id)),
+  ];
+  const resourceIds = [
+    ...new Set([...gameAttempts, ...exerciseAttempts].map((a) => a.resource_id)),
+  ];
 
   const [{ data: profiles }, { data: resources }] = await Promise.all([
     studentIds.length
@@ -36,59 +112,25 @@ export default async function ProgresoPage() {
       </AppHeader>
 
       <div className="mx-auto max-w-[1400px] p-4 sm:p-6 lg:p-10">
-        <div className="mb-6 text-[22px] font-bold">Progreso en juegos</div>
+        <div className="mb-6 text-[22px] font-bold">Progreso de estudiantes</div>
 
-        <div className="overflow-x-auto rounded border border-border bg-white">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-border bg-bg/60">
-                <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
-                  Estudiante
-                </th>
-                <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
-                  Juego
-                </th>
-                <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
-                  Puntaje
-                </th>
-                <th className="px-5 py-3 font-mono text-xs uppercase tracking-[0.06em] text-slate">
-                  Fecha
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {attempts.map((a) => (
-                <tr key={a.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-4 font-semibold">
-                    {nameById[a.user_id] ?? "Estudiante"}
-                  </td>
-                  <td className="px-5 py-4 text-accent">
-                    {tituloById[a.resource_id] ?? "Recurso eliminado"}
-                  </td>
-                  <td className="px-5 py-4 text-accent">
-                    {a.score}/{a.total}
-                  </td>
-                  <td className="px-5 py-4 text-slate">
-                    {new Date(a.completed_at).toLocaleDateString("es", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </td>
-                </tr>
-              ))}
-              {attempts.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-slate">
-                    Todavía no hay intentos de juegos registrados.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <div className="mb-3 font-mono text-xs uppercase tracking-[0.06em] text-accent">Ejercicios</div>
+        <AttemptsTable
+          attempts={exerciseAttempts}
+          nameById={nameById}
+          tituloById={tituloById}
+          labelColumn="Cuadernillo"
+          emptyLabel="Todavía no hay intentos de ejercicios registrados."
+        />
+
+        <div className="mb-3 mt-8 font-mono text-xs uppercase tracking-[0.06em] text-accent">Juegos</div>
+        <AttemptsTable
+          attempts={gameAttempts}
+          nameById={nameById}
+          tituloById={tituloById}
+          labelColumn="Juego"
+          emptyLabel="Todavía no hay intentos de juegos registrados."
+        />
       </div>
     </div>
   );
