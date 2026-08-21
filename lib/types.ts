@@ -89,13 +89,23 @@ export type ExerciseType =
   | "free_writing"
   | "opinion_response";
 
-/** Los 5 tipos con calificación 100% determinística, construidos en esta fase. */
-export const AUTO_GRADABLE_EXERCISE_TYPES: ExerciseType[] = [
+/**
+ * Tipos con un runner interactivo construido — determina qué ejercicios se
+ * renderizan vs. cuáles muestran el placeholder "Próximamente". No implica
+ * que la calificación sea determinística: los tipos de respuesta abierta
+ * (rewrite_improve, opinion_response, free_writing, dialogue_completion) se
+ * autoevalúan por el propio estudiante, no se comparan por texto exacto.
+ */
+export const BUILT_EXERCISE_TYPES: ExerciseType[] = [
   "error_hunt",
   "multiple_choice",
   "odd_one_out",
   "sequencing",
   "transformation_chain",
+  "rewrite_improve",
+  "opinion_response",
+  "free_writing",
+  "dialogue_completion",
 ];
 
 export type ExerciseItem = {

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 export function ExerciseShell({
   number,
@@ -62,6 +62,97 @@ export function VerifyRow({
         >
           Ver la respuesta
         </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Bloque de autoevaluación compartido por los tipos de respuesta abierta
+ * (rewrite_improve, opinion_response, free_writing, dialogue_completion's
+ * blanks libres). A diferencia de VerifyRow, no hay "incorrecto, reintenta"
+ * — no hay forma de saber objetivamente si el texto libre está mal, así que
+ * el flujo es: escribir → "Comparar con el ejemplo" revela la referencia →
+ * el propio estudiante se marca.
+ */
+export function SelfAssessBlock({
+  value,
+  onChange,
+  placeholder,
+  compareLabel,
+  example,
+  marked,
+  onMark,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  compareLabel: string;
+  example: string;
+  marked: boolean | null;
+  onMark: (correct: boolean) => void;
+}) {
+  // `revealed` (¿ya se mostró el ejemplo?) es un paso previo y separado de
+  // `marked` (el veredicto final del estudiante) — revelar el ejemplo NO
+  // debe, por sí solo, contar como una autoevaluación.
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <div>
+      <textarea
+        value={value}
+        disabled={revealed}
+        onChange={(ev) => onChange(ev.target.value)}
+        placeholder={placeholder}
+        rows={3}
+        className="w-full resize-y rounded border border-border bg-white px-3 py-2 text-sm text-navy outline-none focus:border-accent disabled:bg-bg"
+      />
+
+      {!revealed && (
+        <button
+          type="button"
+          onClick={() => setRevealed(true)}
+          disabled={value.trim() === ""}
+          className="mt-3 rounded-md border border-border bg-white px-5 py-2.5 text-sm text-navy transition-colors duration-[var(--transition-hover)] hover:border-slate disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {compareLabel}
+        </button>
+      )}
+
+      {revealed && (
+        <div className="mt-3 flex flex-col gap-3">
+          <div className="rounded-md bg-bg p-3 text-sm text-navy">
+            <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-accent">Ejemplo</span>
+            <p className="mt-1">{example}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate">¿Cómo te fue?</span>
+            <button
+              type="button"
+              onClick={() => onMark(true)}
+              className={
+                "rounded-md border px-4 py-2 text-sm transition-colors duration-[var(--transition-hover)] " +
+                (marked === true
+                  ? "border-success bg-success/10 text-success"
+                  : "border-border bg-white text-navy hover:border-success")
+              }
+            >
+              Lo hice bien
+            </button>
+            <button
+              type="button"
+              onClick={() => onMark(false)}
+              className={
+                "rounded-md border px-4 py-2 text-sm transition-colors duration-[var(--transition-hover)] " +
+                (marked === false
+                  ? "border-danger bg-danger/10 text-danger"
+                  : "border-border bg-white text-navy hover:border-danger")
+              }
+            >
+              Necesito practicar más
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

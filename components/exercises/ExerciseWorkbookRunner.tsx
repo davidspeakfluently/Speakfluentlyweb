@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Clock } from "lucide-react";
 import type { ExerciseItem, ExerciseResultDetail, ExerciseType } from "@/lib/types";
-import { AUTO_GRADABLE_EXERCISE_TYPES } from "@/lib/types";
+import { BUILT_EXERCISE_TYPES } from "@/lib/types";
 import type { ExerciseRunnerResult } from "@/lib/exercise-content";
 import { submitExerciseAttempt } from "@/lib/actions/exercise-attempts";
 import { ExerciseShell } from "@/components/exercises/ExerciseShell";
@@ -12,8 +12,12 @@ import { MultipleChoiceRunner } from "@/components/exercises/runners/MultipleCho
 import { OddOneOutRunner } from "@/components/exercises/runners/OddOneOutRunner";
 import { SequencingRunner } from "@/components/exercises/runners/SequencingRunner";
 import { TransformationChainRunner } from "@/components/exercises/runners/TransformationChainRunner";
+import { RewriteImproveRunner } from "@/components/exercises/runners/RewriteImproveRunner";
+import { OpinionResponseRunner } from "@/components/exercises/runners/OpinionResponseRunner";
+import { FreeWritingRunner } from "@/components/exercises/runners/FreeWritingRunner";
+import { DialogueCompletionRunner } from "@/components/exercises/runners/DialogueCompletionRunner";
 
-const AUTO_GRADABLE = new Set<ExerciseType>(AUTO_GRADABLE_EXERCISE_TYPES);
+const BUILT = new Set<ExerciseType>(BUILT_EXERCISE_TYPES);
 
 function RunnerFor({
   item,
@@ -33,6 +37,14 @@ function RunnerFor({
       return <SequencingRunner data={item.data as never} onResult={onResult} />;
     case "transformation_chain":
       return <TransformationChainRunner data={item.data as never} onResult={onResult} />;
+    case "rewrite_improve":
+      return <RewriteImproveRunner data={item.data as never} onResult={onResult} />;
+    case "opinion_response":
+      return <OpinionResponseRunner data={item.data as never} onResult={onResult} />;
+    case "free_writing":
+      return <FreeWritingRunner data={item.data as never} onResult={onResult} />;
+    case "dialogue_completion":
+      return <DialogueCompletionRunner data={item.data as never} onResult={onResult} />;
     default:
       return null;
   }
@@ -49,7 +61,7 @@ export function ExerciseWorkbookRunner({
   const [done, setDone] = useState(false);
   const submittedRef = useRef(false);
 
-  const buildable = items.filter((item) => AUTO_GRADABLE.has(item.type));
+  const buildable = items.filter((item) => BUILT.has(item.type));
   const allReported = buildable.length > 0 && buildable.every((item) => results[item.id] !== undefined);
 
   const score = Object.values(results).reduce((sum, r) => sum + r.points, 0);
@@ -65,7 +77,7 @@ export function ExerciseWorkbookRunner({
       type: item.type,
       points: results[item.id]?.points ?? 0,
       of: results[item.id]?.of ?? 0,
-      self_assessed: false,
+      self_assessed: results[item.id]?.selfAssessed ?? false,
     }));
 
     submitExerciseAttempt(resourceId, score, total, details);
@@ -76,7 +88,7 @@ export function ExerciseWorkbookRunner({
       {items.map((item, i) => {
         const instructions = (item.data as { instructions?: string })?.instructions ?? "";
 
-        if (!AUTO_GRADABLE.has(item.type)) {
+        if (!BUILT.has(item.type)) {
           return (
             <div
               key={item.id}
@@ -113,7 +125,7 @@ export function ExerciseWorkbookRunner({
               disabled={!allReported}
               className="rounded-md bg-amber px-6 py-3 text-sm font-semibold text-navy shadow-[var(--shadow-card-lift)] transition-[background-color,box-shadow] duration-[var(--transition-standard)] ease-[var(--ease-standard)] hover:bg-amber-strong hover:text-white hover:shadow-[var(--glow-amber)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-amber disabled:hover:text-navy disabled:hover:shadow-[var(--shadow-card-lift)]"
             >
-              {allReported ? "Finalizar ejercicio" : `Verifica todos los ejercicios (${Object.keys(results).length}/${buildable.length})`}
+              {allReported ? "Finalizar ejercicio" : `Completa todos los ejercicios (${Object.keys(results).length}/${buildable.length})`}
             </button>
           )}
         </div>
