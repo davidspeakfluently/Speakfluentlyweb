@@ -61,6 +61,7 @@ create table if not exists public.resources (
   meta text not null,
   storage_path text,
   video_url text,
+  transcript jsonb,
   related_resource_id uuid references public.resources (id) on delete set null,
   created_by uuid references public.profiles (id) on delete set null,
   created_at timestamptz not null default now()
@@ -118,7 +119,7 @@ create table if not exists public.exercise_items (
   type text not null check (type in (
     'error_hunt', 'multiple_choice', 'odd_one_out', 'sequencing',
     'transformation_chain', 'rewrite_improve', 'dialogue_completion',
-    'free_writing', 'opinion_response'
+    'free_writing', 'opinion_response', 'gap_fill_dictation'
   )),
   title text not null,
   data jsonb not null,

@@ -4,6 +4,7 @@ import { ArrowLeft, CircleCheck } from "lucide-react";
 import { createServerSupabase } from "@/lib/supabase/server";
 import {
   getCompletedResourceIds,
+  getExerciseItems,
   getRelatedResources,
   getResource,
   getTiposRecurso,
@@ -15,6 +16,7 @@ import { nivelBadgeClassFor, previewClassFor, previewIconFor, previewLabelFor } 
 import { getVideoEmbedUrl } from "@/lib/video";
 import { AppHeader } from "@/components/AppHeader";
 import { ResourceCard } from "@/components/ResourceCard";
+import { ListeningExercises } from "@/components/ListeningExercises";
 import { toggleCompleted } from "@/lib/actions/progress";
 
 export default async function ResourceDetailPage({
@@ -31,12 +33,13 @@ export default async function ResourceDetailPage({
   const resource = await getResource(supabase, id);
   if (!resource) notFound();
 
-  const [related, completed, fileUrl, tipos, completedIds] = await Promise.all([
+  const [related, completed, fileUrl, tipos, completedIds, exerciseItems] = await Promise.all([
     getRelatedResources(supabase, resource.tema, resource.id),
     user ? isCompleted(supabase, user.id, resource.id) : Promise.resolve(false),
     resource.storage_path ? getSignedFileUrl(resource.storage_path) : Promise.resolve(null),
     getTiposRecurso(supabase),
     user ? getCompletedResourceIds(supabase, user.id) : Promise.resolve(new Set<string>()),
+    getExerciseItems(supabase, resource.id),
   ]);
 
   const tipoByKey = Object.fromEntries(tipos.map((t) => [t.key, t]));
@@ -160,6 +163,12 @@ export default async function ResourceDetailPage({
               </form>
             </div>
           </div>
+
+          <ListeningExercises
+            resourceId={resource.id}
+            transcript={resource.transcript}
+            items={exerciseItems}
+          />
         </div>
 
         <div>

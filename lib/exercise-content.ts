@@ -87,3 +87,12 @@ export type DialogueCompletionData = {
   lines: { speaker: string; text: string }[];
   blanks: (DialogueBlankFixed | DialogueBlankFree)[];
 };
+
+// Ejercicios de audio (transcript + listening exercises) — el mismo
+// exercise_items/exercise_attempts genéricos, sin restricción de kind, ya
+// sirven para colgar esto de un recurso de audio.
+
+export type GapFillDictationData = {
+  instructions: string;
+  items: { id: number; text_with_blank: string; correct_answer: string }[];
+};

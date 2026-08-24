@@ -38,6 +38,12 @@ export type TipoRecurso = {
   created_at: string;
 };
 
+export type Transcript = {
+  title: string;
+  text: string;
+  key_vocabulary: string[];
+};
+
 export type Resource = {
   id: string;
   titulo: string;
@@ -49,6 +55,7 @@ export type Resource = {
   meta: string;
   storage_path: string | null;
   video_url: string | null;
+  transcript: Transcript | null;
   related_resource_id: string | null;
   created_by: string | null;
   created_at: string;
@@ -87,7 +94,8 @@ export type ExerciseType =
   | "rewrite_improve"
   | "dialogue_completion"
   | "free_writing"
-  | "opinion_response";
+  | "opinion_response"
+  | "gap_fill_dictation";
 
 /**
  * Tipos con un runner interactivo construido — determina qué ejercicios se
@@ -106,6 +114,7 @@ export const BUILT_EXERCISE_TYPES: ExerciseType[] = [
   "opinion_response",
   "free_writing",
   "dialogue_completion",
+  "gap_fill_dictation",
 ];
 
 export type ExerciseItem = {

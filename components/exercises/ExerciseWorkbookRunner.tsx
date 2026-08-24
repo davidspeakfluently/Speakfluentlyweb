@@ -16,6 +16,7 @@ import { RewriteImproveRunner } from "@/components/exercises/runners/RewriteImpr
 import { OpinionResponseRunner } from "@/components/exercises/runners/OpinionResponseRunner";
 import { FreeWritingRunner } from "@/components/exercises/runners/FreeWritingRunner";
 import { DialogueCompletionRunner } from "@/components/exercises/runners/DialogueCompletionRunner";
+import { GapFillDictationRunner } from "@/components/exercises/runners/GapFillDictationRunner";
 
 const BUILT = new Set<ExerciseType>(BUILT_EXERCISE_TYPES);
 
@@ -45,6 +46,8 @@ function RunnerFor({
       return <FreeWritingRunner data={item.data as never} onResult={onResult} />;
     case "dialogue_completion":
       return <DialogueCompletionRunner data={item.data as never} onResult={onResult} />;
+    case "gap_fill_dictation":
+      return <GapFillDictationRunner data={item.data as never} onResult={onResult} />;
     default:
       return null;
   }
