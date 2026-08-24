@@ -119,7 +119,8 @@ create table if not exists public.exercise_items (
   type text not null check (type in (
     'error_hunt', 'multiple_choice', 'odd_one_out', 'sequencing',
     'transformation_chain', 'rewrite_improve', 'dialogue_completion',
-    'free_writing', 'opinion_response', 'gap_fill_dictation'
+    'free_writing', 'opinion_response', 'gap_fill_dictation',
+    'true_false', 'minimal_pairs_practice'
   )),
   title text not null,
   data jsonb not null,

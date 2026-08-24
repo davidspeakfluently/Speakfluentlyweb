@@ -68,7 +68,46 @@ function titleFromHeading(heading) {
   return (parts.length > 1 ? parts.slice(1).join("—") : heading).trim();
 }
 
-async function importFile(supabase, filePath) {
+function normalize(s) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Localiza el recurso de audio por audio_title contra resources.titulo.
+ * No siempre coincide exacto: algunos títulos reales llevan un sufijo
+ * ("<audio_title> - Diálogo conversacional") y al menos uno tiene las
+ * palabras en otro orden ("Minimal Pairs - Pronunciation Drills" vs.
+ * "Pronunciation Drills: Minimal Pairs") — por eso, igual que con las
+ * cartillas relacionadas de los ejercicios, se usa solapamiento de tokens
+ * en vez de exigir coincidencia exacta. */
+function findAudioResource(audioTitle, candidates) {
+  const targetNorm = normalize(audioTitle);
+  const exact = candidates.find((c) => normalize(c.titulo) === targetNorm);
+  if (exact) return exact;
+
+  const prefixed = candidates.find((c) => normalize(c.titulo).startsWith(targetNorm + " "));
+  if (prefixed) return prefixed;
+
+  const targetTokens = new Set(targetNorm.split(" ").filter(Boolean));
+  let best = null;
+  let bestRatio = 0;
+  for (const c of candidates) {
+    const titleTokens = new Set(normalize(c.titulo).split(" ").filter(Boolean));
+    const overlap = [...targetTokens].filter((t) => titleTokens.has(t)).length;
+    const ratio = overlap / Math.min(targetTokens.size, titleTokens.size);
+    if (ratio > bestRatio) {
+      bestRatio = ratio;
+      best = c;
+    }
+  }
+  return bestRatio >= 0.8 ? best : null;
+}
+
+async function importFile(supabase, filePath, audioCandidates) {
   const filename = filePath.split("/").pop();
   const raw = readFileSync(filePath, "utf8");
   const { frontmatter, body } = splitFrontmatter(raw, filename);
@@ -96,16 +135,10 @@ async function importFile(supabase, filePath) {
     }
   }
 
-  const { data: resource, error: findError } = await supabase
-    .from("resources")
-    .select("id")
-    .eq("tipo", "audio")
-    .eq("titulo", frontmatter.audio_title)
-    .maybeSingle();
-  if (findError) throw new Error(`${filename}: error buscando el recurso — ${findError.message}`);
+  const resource = findAudioResource(frontmatter.audio_title, audioCandidates);
   if (!resource) {
     throw new Error(
-      `${filename}: no existe un recurso de audio con titulo "${frontmatter.audio_title}" — este script solo enriquece audios ya subidos, no crea nuevos`,
+      `${filename}: no se encontró un recurso de audio para "${frontmatter.audio_title}" — este script solo enriquece audios ya subidos, no crea nuevos`,
     );
   }
   const resourceId = resource.id;
@@ -133,7 +166,9 @@ async function importFile(supabase, filePath) {
     .upsert(items, { onConflict: "resource_id,source_exercise_id" });
   if (itemsError) throw new Error(`${filename}: error insertando exercise_items — ${itemsError.message}`);
 
-  console.log(`  ✓ ${filename} → resource ${resourceId} (transcript + ${items.length} ejercicios)`);
+  console.log(
+    `  ✓ ${filename} (audio_title: "${frontmatter.audio_title}") → resource ${resourceId} "${resource.titulo}" (transcript + ${items.length} ejercicios)`,
+  );
 }
 
 async function main() {
@@ -158,12 +193,21 @@ async function main() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
+  const { data: audioCandidates, error: candidatesError } = await supabase
+    .from("resources")
+    .select("id, titulo")
+    .eq("tipo", "audio");
+  if (candidatesError) {
+    console.error("Error cargando recursos de audio existentes:", candidatesError.message);
+    process.exit(1);
+  }
+
   console.log(`Cargando ${files.length} archivo(s) desde ${dir}\n`);
 
   let failed = 0;
   for (const filePath of files) {
     try {
-      await importFile(supabase, filePath);
+      await importFile(supabase, filePath, audioCandidates ?? []);
     } catch (err) {
       failed += 1;
       console.error(`  ✗ ${err.message}`);

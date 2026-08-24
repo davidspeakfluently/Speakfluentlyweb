@@ -95,7 +95,9 @@ export type ExerciseType =
   | "dialogue_completion"
   | "free_writing"
   | "opinion_response"
-  | "gap_fill_dictation";
+  | "gap_fill_dictation"
+  | "true_false"
+  | "minimal_pairs_practice";
 
 /**
  * Tipos con un runner interactivo construido — determina qué ejercicios se
@@ -115,6 +117,8 @@ export const BUILT_EXERCISE_TYPES: ExerciseType[] = [
   "free_writing",
   "dialogue_completion",
   "gap_fill_dictation",
+  "true_false",
+  "minimal_pairs_practice",
 ];
 
 export type ExerciseItem = {

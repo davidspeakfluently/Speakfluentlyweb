@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "create-admin": "node scripts/create-admin.mjs",
-    "import-ejercicios": "node scripts/import-ejercicios.mjs"
+    "import-ejercicios": "node scripts/import-ejercicios.mjs",
+    "import-audios": "node scripts/import-audios.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

@@ -17,6 +17,8 @@ import { OpinionResponseRunner } from "@/components/exercises/runners/OpinionRes
 import { FreeWritingRunner } from "@/components/exercises/runners/FreeWritingRunner";
 import { DialogueCompletionRunner } from "@/components/exercises/runners/DialogueCompletionRunner";
 import { GapFillDictationRunner } from "@/components/exercises/runners/GapFillDictationRunner";
+import { TrueFalseRunner } from "@/components/exercises/runners/TrueFalseRunner";
+import { MinimalPairsPracticeRunner } from "@/components/exercises/runners/MinimalPairsPracticeRunner";
 
 const BUILT = new Set<ExerciseType>(BUILT_EXERCISE_TYPES);
 
@@ -48,6 +50,10 @@ function RunnerFor({
       return <DialogueCompletionRunner data={item.data as never} onResult={onResult} />;
     case "gap_fill_dictation":
       return <GapFillDictationRunner data={item.data as never} onResult={onResult} />;
+    case "true_false":
+      return <TrueFalseRunner data={item.data as never} onResult={onResult} />;
+    case "minimal_pairs_practice":
+      return <MinimalPairsPracticeRunner data={item.data as never} onResult={onResult} />;
     default:
       return null;
   }

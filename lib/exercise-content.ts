@@ -96,3 +96,16 @@ export type GapFillDictationData = {
   instructions: string;
   items: { id: number; text_with_blank: string; correct_answer: string }[];
 };
+
+export type TrueFalseData = {
+  instructions: string;
+  statements: { id: number; statement: string; correct_answer: boolean; explanation: string }[];
+};
+
+/** Práctica de pronunciación pura — sin respuesta que calificar, el
+ * estudiante marca cada par como practicado en voz alta. */
+export type MinimalPairsPracticeData = {
+  instructions: string;
+  pairs: { id: number; word_a: string; word_b: string; example_a: string; example_b: string }[];
+  production_challenge: string;
+};
