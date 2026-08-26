@@ -38,9 +38,23 @@ export type TipoRecurso = {
   created_at: string;
 };
 
+export type TranscriptSection = {
+  section_title: string;
+  text: string;
+};
+
+/**
+ * La mayoría de los audios tienen un transcript plano (`text`). Algunos
+ * (ej. "Warm-Up Diario", varios clips independientes en un solo archivo)
+ * traen `sections[]` en vez de `text` — cada sección se muestra por
+ * separado dentro del mismo bloque colapsable, no como transcripts
+ * independientes.
+ */
 export type Transcript = {
   title: string;
-  text: string;
+  text?: string;
+  note?: string;
+  sections?: TranscriptSection[];
   key_vocabulary: string[];
 };
 

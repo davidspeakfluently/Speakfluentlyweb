@@ -63,9 +63,29 @@ function extractSections(body) {
   return sections;
 }
 
-function titleFromHeading(heading) {
+const TYPE_LABEL = {
+  sequencing: "Sequencing",
+  listening_comprehension: "Listening Comprehension",
+  gap_fill_dictation: "Gap-Fill Dictation",
+  vocabulary_context: "Vocabulary in Context",
+  reflection_response: "Reflection Response",
+  true_false: "True or False",
+  minimal_pairs_practice: "Minimal Pairs Practice",
+};
+
+/** El heading normal es "Exercise N — Tipo (aclaración)" y el texto después
+ * del guion ya sirve de título. "Mini-Exercise N — (para Warm-up N: ...)"
+ * (caso especial de clips independientes) solo trae una aclaración entre
+ * paréntesis que repite el warm-up — el llamador (ListeningExercises) ya
+ * antepone esa referencia por su cuenta, así que acá cae solo al nombre
+ * del tipo para no duplicarla. */
+function titleFromHeading(heading, type) {
   const parts = heading.split("—");
-  return (parts.length > 1 ? parts.slice(1).join("—") : heading).trim();
+  const afterDash = (parts.length > 1 ? parts.slice(1).join("—") : heading).trim();
+  if (afterDash.startsWith("(") && afterDash.endsWith(")")) {
+    return TYPE_LABEL[type] ?? type;
+  }
+  return afterDash;
 }
 
 function normalize(s) {
@@ -116,7 +136,7 @@ async function importFile(supabase, filePath, audioCandidates) {
   const transcriptSection = sections.find((s) => s.data?.transcript)?.data?.transcript;
   if (!transcriptSection) throw new Error(`${filename}: no se encontró el bloque de transcript`);
 
-  const exerciseSections = sections.filter((s) => /^Exercise\s+\d+/i.test(s.heading));
+  const exerciseSections = sections.filter((s) => /^(?:Mini-)?Exercise\s+\d+/i.test(s.heading));
   const metadataSection = sections.find((s) => s.heading === "Metadata for platform integration");
 
   if (exerciseSections.length === 0) throw new Error(`${filename}: no se encontraron ejercicios`);
@@ -156,7 +176,7 @@ async function importFile(supabase, filePath, audioCandidates) {
       source_exercise_id: s.data.id,
       orden: i,
       type,
-      title: titleFromHeading(s.heading),
+      title: titleFromHeading(s.heading, type),
       data: s.data,
     };
   });
