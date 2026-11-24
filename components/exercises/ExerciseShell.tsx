@@ -12,8 +12,8 @@ export function ExerciseShell({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-white p-5 sm:p-6">
-      <div className="mb-1 font-mono text-xs uppercase tracking-[0.06em] text-accent">
+    <div className="rounded-2xl border border-border/70 bg-white p-5 shadow-[0_14px_30px_-22px_rgba(0,4,60,0.45)] sm:p-6">
+      <div className="mb-1.5 text-[11px] font-extrabold uppercase leading-[1.4] tracking-[0.12em] text-accent">
         Ejercicio {number} · {title}
       </div>
       <p className="mb-4 text-[13px] leading-[1.5] text-slate">{instructions}</p>

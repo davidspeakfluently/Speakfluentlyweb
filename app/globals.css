@@ -36,7 +36,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-switzer);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-instrument-serif);
   --font-mono: var(--font-ibm-plex-mono);
 }
 

@@ -29,55 +29,9 @@ export async function getTiposRecurso(supabase: DB): Promise<TipoRecurso[]> {
   return data ?? [];
 }
 
-export interface ResourceFilters {
-  nivel?: string;
-  tema?: string;
-  tipo?: string; // key de tipos_recurso, ej. "guia"
-  q?: string;
-}
-
-export async function getFilteredResources(
-  supabase: DB,
-  filters: ResourceFilters,
-): Promise<Resource[]> {
-  let query = supabase.from("resources").select("*").order("created_at", { ascending: false });
-
-  if (filters.nivel && filters.nivel !== "Todos") {
-    query = query.eq("nivel", filters.nivel as Resource["nivel"]);
-  }
-  if (filters.tema && filters.tema !== "Todos") {
-    query = query.eq("tema", filters.tema);
-  }
-  if (filters.tipo && filters.tipo !== "Todos") {
-    query = query.eq("tipo", filters.tipo);
-  }
-  if (filters.q?.trim()) {
-    query = query.ilike("titulo", `%${filters.q.trim()}%`);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data ?? [];
-}
-
 export async function getResource(supabase: DB, id: string): Promise<Resource | null> {
   const { data } = await supabase.from("resources").select("*").eq("id", id).single();
   return data;
-}
-
-export async function getRelatedResources(
-  supabase: DB,
-  tema: string,
-  excludeId: string,
-): Promise<Resource[]> {
-  const { data } = await supabase
-    .from("resources")
-    .select("*")
-    .eq("tema", tema)
-    .neq("id", excludeId)
-    .order("created_at", { ascending: false })
-    .limit(3);
-  return data ?? [];
 }
 
 export async function isCompleted(

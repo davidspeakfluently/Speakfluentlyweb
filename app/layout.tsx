@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { IBM_Plex_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Instrument_Serif, Manrope } from "next/font/google";
 import "./globals.css";
 
-const switzer = localFont({
-  src: [
-    { path: "./fonts/Switzer-Variable.woff2", weight: "100 900", style: "normal" },
-    { path: "./fonts/Switzer-VariableItalic.woff2", weight: "100 900", style: "italic" },
-  ],
-  variable: "--font-switzer",
+/* Tipografías de las landings de Speakfluently: titulares y texto. */
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
   display: "swap",
+  variable: "--font-instrument-serif",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-manrope",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
@@ -25,10 +31,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${switzer.variable} ${ibmPlexMono.variable}`}>
-      <body className="min-h-screen bg-bg text-navy antialiased">
-        {children}
-      </body>
+    <html lang="es" className={`${instrumentSerif.variable} ${manrope.variable} ${ibmPlexMono.variable}`}>
+      <body className="min-h-screen bg-bg text-navy antialiased">{children}</body>
     </html>
   );
 }
